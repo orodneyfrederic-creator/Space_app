@@ -19,6 +19,7 @@ import {
   plusLongueSecheresse,
   pluieCumulee,
 } from './indicateurs.js'
+import { solLePlusProche } from './sols.js'
 
 export type OptionsFiche = {
   nomLieu?: string
@@ -53,6 +54,9 @@ export function construireFiche(lat: number, lon: number, donneesJour: Jour[], c
   const normale30 = normalePeriode(donneesJour, 30, climato)
   const ecart30 = ecartNormale(pluie30, normale30)
   const pluie7 = pluieCumulee(donneesJour, 7)
+  const normale7 = normalePeriode(donneesJour, 7, climato)
+  const ecart7 = ecartNormale(pluie7, normale7)
+  const sol0_30 = solLePlusProche(lat, lon)
   const secs14 = joursSecs(donneesJour, 14)
   const secheresse14 = plusLongueSecheresse(derniers(donneesJour, 14))
   const sol = derniereValeur(donneesJour, 'solRacines')
@@ -69,6 +73,7 @@ export function construireFiche(lat: number, lon: number, donneesJour: Jour[], c
   const manquantes: string[] = []
   if (sol === null) manquantes.push('humidité du sol')
   if (tmax7 === null) manquantes.push('température')
+  if (sol0_30 === null) manquantes.push('sol (texture, pH)')
 
   const ligneSaison =
     demarrage.statut === 'demarree'
@@ -79,14 +84,17 @@ export function construireFiche(lat: number, lon: number, donneesJour: Jour[], c
     `FICHE PARCELLE — calculée le ${dateFr(aujourdhui.toISOString().slice(0, 10))}, données NASA POWER jusqu'au ${dateFr(dernierJour)}`,
     `Lieu : ${options.nomLieu ?? 'parcelle du producteur'} (${lat}, ${lon})`,
     `Pluie des 30 derniers jours : ${fr(pluie30)} mm (normale pour la période : ${fr(normale30)} mm) → ${ecart30 === null ? 'écart non calculable' : `${signe(ecart30)} %`}, ${lectureEcart(ecart30)}`,
-    `Pluie des 7 derniers jours : ${fr(pluie7)} mm`,
+    `Pluie des 7 derniers jours : ${fr(pluie7)} mm (normale pour la période : ${fr(normale7)} mm) → ${ecart7 === null ? 'écart non calculable' : `${signe(ecart7)} %`}, ${lectureEcart(ecart7)}`,
     `Jours secs (moins de 1 mm) sur les 14 derniers jours : ${secs14} (plus longue suite sèche : ${nbJours(secheresse14)})`,
-    `Humidité du sol au niveau des racines (0 = sec, 1 = saturé) : ${fr(sol)}${sol === null ? '' : ` → ${etat}`} (normale du mois : ${fr(solNormal)})`,
+    // L'indice brut (0 à 1) reste dans `donnees` : le texte ne donne que l'état, compréhensible par le producteur.
+    `Humidité du sol au niveau des racines : ${sol === null ? 'inconnue' : etat} (habituellement pour ce mois : ${etatSol(solNormal ?? null)})`,
     `Température maximale moyenne (7 derniers jours) : ${fr(tmax7)} °C`,
     `Grande saison des pluies : ${ligneSaison}`,
     `Mois habituellement les plus secs ici (normales NASA) : ${secs.join(', ')} → sol nu à protéger`,
     `Évaluation de la fenêtre de semis (règles S'STACK, à valider) : ${evaluation.verdict}, car ${evaluation.raison}`,
-    `Sol (texture, pH) : données non disponibles`,
+    sol0_30
+      ? `Sol (0–30 cm) : argile ${fr(sol0_30.argile)} %, sable ${fr(sol0_30.sable)} %, pH ${fr(sol0_30.ph)}, carbone organique ${fr(sol0_30.carbone)} g/kg (source SoilGrids, estimation à 250 m, site de référence : ${sol0_30.site}, à ${sol0_30.distanceKm} km)`
+      : `Sol (texture, pH) : données non disponibles (aucun site SoilGrids connu à moins de 50 km)`,
     `Culture déclarée : ${options.culture ?? 'non renseignée'}`,
     `Données manquantes : ${manquantes.length ? manquantes.join(', ') : 'aucune'}`,
   ]
@@ -94,7 +102,7 @@ export function construireFiche(lat: number, lon: number, donneesJour: Jour[], c
   return {
     texte: lignes.join('\n'),
     donnees: {
-      dernierJour, pluie30, normale30, ecart30, pluie7, secs14, secheresse14, sol, etatSol: etat, solNormal,
+      dernierJour, pluie30, normale30, ecart30, pluie7, normale7, ecart7, solTexture: sol0_30, secs14, secheresse14, sol, etatSol: etat, solNormal,
       tmax7, demarrage, moisSecs: secs, evaluation,
     },
   }

@@ -1,0 +1,252 @@
+{
+  "source": "ISRIC SoilGrids v2.0 (https://soilgrids.org), API properties/query, valeur moyenne (mean)",
+  "telecharge_le": "2026-11-14",
+  "unites_brutes": {
+    "phh2o": "pH × 10",
+    "clay": "g/kg",
+    "sand": "g/kg",
+    "soc": "dg/kg"
+  },
+  "conversion": "diviser chaque valeur par 10 → pH, %, %, g/kg",
+  "resolution": "environ 250 m : tendance, pas la vérité d'une parcelle",
+  "sites": [
+    {
+      "nom": "Tchibanga (Nyanga)",
+      "lat": -2.85,
+      "lon": 11.02,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 374,
+          "5-15cm": 367,
+          "15-30cm": 378
+        },
+        "phh2o": {
+          "0-5cm": 49,
+          "5-15cm": 49,
+          "15-30cm": 50
+        },
+        "sand": {
+          "0-5cm": 398,
+          "5-15cm": 395,
+          "15-30cm": 383
+        },
+        "soc": {
+          "0-5cm": 420,
+          "5-15cm": 259,
+          "15-30cm": 226
+        }
+      },
+      "lat_interroge": -2.85,
+      "lon_interroge": 11.02
+    },
+    {
+      "nom": "Mouila (Ngounié)",
+      "lat": -1.87,
+      "lon": 11.06,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 162,
+          "5-15cm": 163,
+          "15-30cm": 174
+        },
+        "phh2o": {
+          "0-5cm": 52,
+          "5-15cm": 52,
+          "15-30cm": 52
+        },
+        "sand": {
+          "0-5cm": 522,
+          "5-15cm": 531,
+          "15-30cm": 517
+        },
+        "soc": {
+          "0-5cm": 537,
+          "5-15cm": 424,
+          "15-30cm": 250
+        }
+      },
+      "lat_interroge": -1.84,
+      "lon_interroge": 11.06,
+      "note": "centre-ville sans donnée SoilGrids (zone urbaine ou eau) : point non urbain le plus proche"
+    },
+    {
+      "nom": "Lambaréné (Moyen-Ogooué)",
+      "lat": -0.7,
+      "lon": 10.24,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 186,
+          "5-15cm": 187,
+          "15-30cm": 248
+        },
+        "phh2o": {
+          "0-5cm": 50,
+          "5-15cm": 50,
+          "15-30cm": 50
+        },
+        "sand": {
+          "0-5cm": 550,
+          "5-15cm": 555,
+          "15-30cm": 510
+        },
+        "soc": {
+          "0-5cm": 370,
+          "5-15cm": 312,
+          "15-30cm": 246
+        }
+      },
+      "lat_interroge": -0.73,
+      "lon_interroge": 10.24,
+      "note": "centre-ville sans donnée SoilGrids (zone urbaine ou eau) : point non urbain le plus proche"
+    },
+    {
+      "nom": "Libreville (Estuaire)",
+      "lat": 0.39,
+      "lon": 9.45,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 303,
+          "5-15cm": 302,
+          "15-30cm": 336
+        },
+        "phh2o": {
+          "0-5cm": 53,
+          "5-15cm": 53,
+          "15-30cm": 53
+        },
+        "sand": {
+          "0-5cm": 443,
+          "5-15cm": 446,
+          "15-30cm": 422
+        },
+        "soc": {
+          "0-5cm": 900,
+          "5-15cm": 787,
+          "15-30cm": 793
+        }
+      },
+      "lat_interroge": 0.44,
+      "lon_interroge": 9.45,
+      "note": "centre-ville sans donnée SoilGrids (zone urbaine ou eau) : point non urbain le plus proche"
+    },
+    {
+      "nom": "Oyem (Woleu-Ntem)",
+      "lat": 1.6,
+      "lon": 11.58,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 463,
+          "5-15cm": 467,
+          "15-30cm": 518
+        },
+        "phh2o": {
+          "0-5cm": 45,
+          "5-15cm": 45,
+          "15-30cm": 46
+        },
+        "sand": {
+          "0-5cm": 444,
+          "5-15cm": 449,
+          "15-30cm": 405
+        },
+        "soc": {
+          "0-5cm": 581,
+          "5-15cm": 272,
+          "15-30cm": 198
+        }
+      },
+      "lat_interroge": 1.63,
+      "lon_interroge": 11.58,
+      "note": "centre-ville sans donnée SoilGrids (zone urbaine ou eau) : point non urbain le plus proche"
+    },
+    {
+      "nom": "Makokou (Ogooué-Ivindo)",
+      "lat": 0.57,
+      "lon": 12.86,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 411,
+          "5-15cm": 433,
+          "15-30cm": 465
+        },
+        "phh2o": {
+          "0-5cm": 45,
+          "5-15cm": 45,
+          "15-30cm": 46
+        },
+        "sand": {
+          "0-5cm": 444,
+          "5-15cm": 424,
+          "15-30cm": 398
+        },
+        "soc": {
+          "0-5cm": 370,
+          "5-15cm": 308,
+          "15-30cm": 198
+        }
+      },
+      "lat_interroge": 0.6,
+      "lon_interroge": 12.86,
+      "note": "centre-ville sans donnée SoilGrids (zone urbaine ou eau) : point non urbain le plus proche"
+    },
+    {
+      "nom": "Koulamoutou (Ogooué-Lolo)",
+      "lat": -1.13,
+      "lon": 12.47,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 350,
+          "5-15cm": 357,
+          "15-30cm": 415
+        },
+        "phh2o": {
+          "0-5cm": 49,
+          "5-15cm": 49,
+          "15-30cm": 49
+        },
+        "sand": {
+          "0-5cm": 482,
+          "5-15cm": 480,
+          "15-30cm": 439
+        },
+        "soc": {
+          "0-5cm": 389,
+          "5-15cm": 279,
+          "15-30cm": 212
+        }
+      },
+      "lat_interroge": -1.1,
+      "lon_interroge": 12.47,
+      "note": "centre-ville sans donnée SoilGrids (zone urbaine ou eau) : point non urbain le plus proche"
+    },
+    {
+      "nom": "Franceville (Haut-Ogooué)",
+      "lat": -1.63,
+      "lon": 13.58,
+      "valeurs": {
+        "clay": {
+          "0-5cm": 442,
+          "5-15cm": 430,
+          "15-30cm": 510
+        },
+        "phh2o": {
+          "0-5cm": 49,
+          "5-15cm": 49,
+          "15-30cm": 50
+        },
+        "sand": {
+          "0-5cm": 281,
+          "5-15cm": 290,
+          "15-30cm": 243
+        },
+        "soc": {
+          "0-5cm": 357,
+          "5-15cm": 283,
+          "15-30cm": 187
+        }
+      },
+      "lat_interroge": -1.63,
+      "lon_interroge": 13.58
+    }
+  ]
+}
