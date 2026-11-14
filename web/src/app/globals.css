@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Palette et typographie de la maquette AgroSat */
+@theme {
+  --color-paper: #F4F2EC;
+  --color-surface: #FFFFFF;
+  --color-ink: #17201B;
+  --color-muted: #5A6359;
+  --color-muted-2: #4A5249;
+  --color-line: #D9D5CA;
+  --color-line-soft: #E2DFD6;
+  --color-track: #ECE9E1;
+  --color-segmented: #E8E5DC;
+  --color-accent: #1E6B45;
+  --color-accent-hover: #14502F;
+  --color-accent-soft: #E3EEE6;
+  --color-accent-light: #9DC3AC;
+  --color-warn: #8A4A0E;
+  --color-warn-ink: #6E3A0A;
+  --color-warn-bg: #F6E7D6;
+  --color-warn-line: #A85A12;
+  --color-warn-bar: #C47A2C;
+  --color-risk: #9B2C1F;
+  --color-risk-bg: #F5DEDA;
+  --color-risk-bar: #B8473A;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: #E9E6DE;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Cadre téléphone : plein écran sur mobile, 390×844 arrondi sur grand écran */
+.screen {
+  width: 100%;
+  max-width: 390px;
+  height: 100dvh;
+  margin: 0 auto;
+  background: var(--color-paper);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+@media (min-width: 600px) and (min-height: 880px) {
+  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .screen { width: 390px; height: 844px; border-radius: 32px; box-shadow: 0 20px 60px rgba(23, 32, 27, 0.18); }
 }
