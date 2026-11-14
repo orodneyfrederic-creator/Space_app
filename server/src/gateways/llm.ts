@@ -58,10 +58,25 @@ function getClientGemini(): OpenAI {
   return clientGemini
 }
 
-/** Vrai si l'erreur justifie de passer au fournisseur de secours (quota dépassé ou délai dépassé). */
+/** Réponse vide (par exemple tout le budget de jetons consommé par le raisonnement) : on bascule aussi. */
+class ReponseVide extends Error {}
+
+/** Vrai si l'erreur justifie de passer au fournisseur de secours (quota, délai dépassé ou réponse vide). */
 function doitBasculer(erreur: unknown): boolean {
-  return erreur instanceof RateLimitError || erreur instanceof APIConnectionTimeoutError
+  return erreur instanceof RateLimitError || erreur instanceof APIConnectionTimeoutError || erreur instanceof ReponseVide
 }
+
+// Effort de raisonnement de Groq (gpt-oss) : « low » divise par ~8 les jetons de raisonnement
+// (mesuré : 302 → 36 par question), ce qui ménage le quota gratuit. Valeurs : low, medium, high.
+const EFFORTS = ['low', 'medium', 'high'] as const
+type Effort = (typeof EFFORTS)[number]
+function effortGroq(): Effort {
+  const valeur = process.env.GROQ_REASONING_EFFORT ?? 'low'
+  return EFFORTS.find((e) => e === valeur) ?? 'low'
+}
+
+// Plafond de jetons générés : une réponse de 5 phrases + un raisonnement court tiennent largement dedans
+const MAX_JETONS_PAR_DEFAUT = 1024
 
 async function appeler(
   client: OpenAI,
@@ -74,11 +89,12 @@ async function appeler(
     model: modele,
     messages,
     temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 2048,
+    max_tokens: options.maxTokens ?? MAX_JETONS_PAR_DEFAUT,
+    ...(fournisseur === 'groq' ? { reasoning_effort: effortGroq() } : {}),
   })
   const texte = reponse.choices[0]?.message.content?.trim()
   if (!texte) {
-    throw new Error(`Réponse vide du fournisseur ${fournisseur} (modèle ${modele})`)
+    throw new ReponseVide(`Réponse vide du fournisseur ${fournisseur} (modèle ${modele})`)
   }
   return { texte, fournisseur, modele }
 }
@@ -95,7 +111,7 @@ export async function demanderLLM(
     return await appeler(getClientGroq(), 'groq', envObligatoire('GROQ_MODEL'), messages, options)
   } catch (erreur) {
     if (!doitBasculer(erreur)) throw erreur
-    const motif = erreur instanceof RateLimitError ? 'quota dépassé (429)' : 'délai dépassé'
+    const motif = erreur instanceof RateLimitError ? 'quota dépassé (429)' : erreur instanceof ReponseVide ? 'réponse vide' : 'délai dépassé'
     console.warn(`[LLM] Groq indisponible (${motif}), bascule sur Gemini.`)
     return appeler(getClientGemini(), 'gemini', envObligatoire('GEMINI_MODEL'), messages, options)
   }

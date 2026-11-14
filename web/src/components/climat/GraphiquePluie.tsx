@@ -28,8 +28,9 @@ export default function GraphiquePluie({ points, hauteur = 280 }: { points: Poin
               contentStyle={{ borderRadius: 12, border: '1px solid #D2C9B1', fontFamily: 'var(--font-sans)' }}
             />
             <Legend formatter={(nom) => (nom === 'pluie' ? 'Pluie du jour' : 'Normale (moyenne NASA)')} wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="pluie" fill="#3A75C4" radius={[4, 4, 0, 0]} maxBarSize={18} />
-            <Line dataKey="normale" type="stepAfter" stroke="#0B5D3B" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+            {/* Sans animation : affichage immédiat et fiable (démo, captures, préférence « réduire les animations ») */}
+            <Bar dataKey="pluie" fill="#3A75C4" radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false} />
+            <Line dataKey="normale" type="stepAfter" stroke="#0B5D3B" strokeWidth={2} strokeDasharray="5 4" dot={false} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

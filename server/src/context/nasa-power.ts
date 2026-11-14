@@ -53,10 +53,26 @@ async function avecCache<T>(cle: string, dureeMs: number, charger: () => Promise
   return valeur
 }
 
+/**
+ * Requête vers NASA POWER avec UNE nouvelle tentative après 1,5 s en cas d'erreur réseau
+ * (des « fetch failed » ponctuels ont été observés au premier appel d'un processus).
+ * Un délai dépassé n'est pas retenté : on ne fait pas attendre le producteur 40 s.
+ */
+async function telecharger(url: string): Promise<Response> {
+  try {
+    return await fetch(url, { signal: AbortSignal.timeout(DELAI_MS) })
+  } catch (erreur) {
+    if (erreur instanceof DOMException && erreur.name === 'TimeoutError') throw erreur
+    console.warn('[nasa-power] erreur réseau, nouvelle tentative dans 1,5 s :', String(erreur))
+    await new Promise((r) => setTimeout(r, 1500))
+    return fetch(url, { signal: AbortSignal.timeout(DELAI_MS) })
+  }
+}
+
 async function appelerNasa(url: string): Promise<Record<string, Record<string, number>>> {
   let reponse: Response
   try {
-    reponse = await fetch(url, { signal: AbortSignal.timeout(DELAI_MS) })
+    reponse = await telecharger(url)
   } catch (erreur) {
     throw new Error(`NASA POWER injoignable (réseau ou délai dépassé) : ${String(erreur)}`)
   }
