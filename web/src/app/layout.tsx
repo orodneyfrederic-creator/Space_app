@@ -1,28 +1,35 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { JetBrains_Mono, Outfit } from "next/font/google";
+import TabBar from "@/components/TabBar";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+// Polices de la charte S'STACK
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "AgroSat",
-  description: "Conseil de cultures à partir des données NASA POWER",
+  title: "S'STACK",
+  description: "Conseils agricoles pour les producteurs gabonais, à partir des données NASA.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
-      <body>{children}</body>
+    <html lang="fr" className={`${outfit.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body>
+        <div className="screen">
+          {children}
+          <TabBar />
+        </div>
+      </body>
     </html>
   );
 }

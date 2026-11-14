@@ -1,23 +1,31 @@
+"use client";
+// Barre de navigation commune à toutes les pages (affichée par app/layout.tsx).
 import Link from "next/link";
-import { ChartIcon, ChatIcon, HomeIcon, SproutIcon } from "./icons";
+import { usePathname } from "next/navigation";
+import { ChartIcon, ChatIcon, HomeIcon, MapIcon, SproutIcon } from "./icons";
 
 const tabs = [
-  { href: "/", label: "Accueil", icon: HomeIcon },
-  { href: "/donnees", label: "Données", icon: ChartIcon },
-  { href: "/cultures", label: "Cultures", icon: SproutIcon },
-  { href: "/assistant", label: "Assistant", icon: ChatIcon },
+  { href: "/", label: "Accueil", icon: HomeIcon, match: ["/"] },
+  { href: "/carte", label: "Carte", icon: MapIcon, match: ["/carte", "/parcelles"] },
+  { href: "/donnees", label: "Données", icon: ChartIcon, match: ["/donnees"] },
+  { href: "/cultures", label: "Cultures", icon: SproutIcon, match: ["/cultures"] },
+  { href: "/discuter", label: "Agent", icon: ChatIcon, match: ["/discuter", "/assistant", "/historique"] },
 ] as const;
 
-export type Tab = (typeof tabs)[number]["href"];
+function estActif(pathname: string, match: readonly string[]) {
+  return match.some((m) => (m === "/" ? pathname === "/" : pathname === m || pathname.startsWith(`${m}/`)));
+}
 
-export default function TabBar({ active }: { active: Tab }) {
+export default function TabBar() {
+  const pathname = usePathname();
+
   return (
     <nav
       aria-label="Navigation principale"
-      className="grid shrink-0 grid-cols-4 border-t border-line-soft bg-surface px-2 pt-1.5 pb-[22px]"
+      className="grid shrink-0 grid-cols-5 border-t border-line-soft bg-surface px-1 pt-1.5 pb-[22px]"
     >
-      {tabs.map(({ href, label, icon: TabIcon }) => {
-        const on = href === active;
+      {tabs.map(({ href, label, icon: TabIcon, match }) => {
+        const on = estActif(pathname, match);
         return (
           <Link
             key={href}

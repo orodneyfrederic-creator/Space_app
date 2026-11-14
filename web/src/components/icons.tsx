@@ -46,3 +46,21 @@ export const SunIcon = () => (
 export const ArrowIcon = () => (
   <Icon size={20}><path d="M5 12h14M13 6l6 6-6 6" /></Icon>
 );
+export const MapIcon = () => (
+  <Icon><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" /></Icon>
+);
+export const MicIcon = () => (
+  <Icon size={20}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </Icon>
+);
+export const ClockIcon = () => (
+  <Icon size={20}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Icon>
+);
+export const DropIcon = () => (
+  <Icon><path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11z" /></Icon>
+);

@@ -1,38 +1,61 @@
 @import "tailwindcss";
 
-/* Palette et typographie de la maquette AgroSat */
+/*
+ * Charte S'STACK (Visuel S'STACK/Couleurs/Code couleurs S'STACK.txt)
+ * Noir Ébène #111A14 · Vert Forêt #0B5D3B · Vert Gabon #009E60 · Jaune Soleil #FCD116
+ * Bleu Océan #3A75C4 · Terre Latérite #B4532A · Pierre de Mbigou #E9E2CF · Blanc #FFFFFF
+ * Règle : le Jaune Soleil n'est jamais du texte sur fond clair (accent sur vert ou ébène).
+ */
 @theme {
-  --color-paper: #F4F2EC;
-  --color-surface: #FFFFFF;
-  --color-ink: #17201B;
-  --color-muted: #5A6359;
-  --color-muted-2: #4A5249;
-  --color-line: #D9D5CA;
-  --color-line-soft: #E2DFD6;
-  --color-track: #ECE9E1;
-  --color-segmented: #E8E5DC;
-  --color-accent: #1E6B45;
-  --color-accent-hover: #14502F;
-  --color-accent-soft: #E3EEE6;
-  --color-accent-light: #9DC3AC;
-  --color-warn: #8A4A0E;
-  --color-warn-ink: #6E3A0A;
-  --color-warn-bg: #F6E7D6;
-  --color-warn-line: #A85A12;
-  --color-warn-bar: #C47A2C;
-  --color-risk: #9B2C1F;
-  --color-risk-bg: #F5DEDA;
-  --color-risk-bar: #B8473A;
+  /* Fonds et texte */
+  --color-paper: #E9E2CF;        /* Pierre de Mbigou */
+  --color-surface: #FFFFFF;      /* Blanc */
+  --color-ink: #111A14;          /* Noir Ébène */
+  --color-muted: #535B53;
+  --color-muted-2: #434A43;
+  --color-line: #D2C9B1;
+  --color-line-soft: #E0D9C6;
+  --color-track: #EFEADD;
+  --color-segmented: #DDD5BF;
+
+  /* Principal : Vert Forêt */
+  --color-accent: #0B5D3B;
+  --color-accent-hover: #08472D;
+  --color-accent-soft: #DCEBE2;
+  --color-accent-light: #8FC2A8;
+
+  /* Succès, sol sain : Vert Gabon */
+  --color-success: #009E60;
+
+  /* Accent, chaleur : Jaune Soleil (fonds pâles + texte foncé pour le contraste) */
+  --color-sun: #FCD116;
+  --color-warn: #6B5300;
+  --color-warn-ink: #5A4600;
+  --color-warn-bg: #FDF1C2;
+  --color-warn-line: #C9A200;
+  --color-warn-bar: #E5BC12;
+
+  /* Eau, pluie, données NASA : Bleu Océan */
+  --color-info: #3A75C4;
+  --color-info-ink: #2A5A9C;
+  --color-info-soft: #DEE8F6;
+  --color-info-light: #A9C4E8;
+
+  /* Sol dégradé, érosion : Terre Latérite */
+  --color-risk: #8E3F1E;
+  --color-risk-bg: #F5E0D5;
+  --color-risk-bar: #B4532A;
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), sans-serif;
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-display: var(--font-outfit), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 body {
   margin: 0;
-  background: #E9E6DE;
+  background: #D8CFB7;
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
@@ -50,5 +73,5 @@ body {
 }
 @media (min-width: 600px) and (min-height: 880px) {
   body { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-  .screen { width: 390px; height: 844px; border-radius: 32px; box-shadow: 0 20px 60px rgba(23, 32, 27, 0.18); }
+  .screen { width: 390px; height: 844px; border-radius: 32px; box-shadow: 0 20px 60px rgba(17, 26, 20, 0.22); }
 }
