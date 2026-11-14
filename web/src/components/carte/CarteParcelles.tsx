@@ -1,51 +1,113 @@
 'use client'
-// Carte des parcelles avec MapLibre (déjà installé : maplibre-gl).
-// TODO (front-end) :
-//  1. Créer la carte dans un useEffect (MapLibre ne fonctionne que dans le navigateur).
-//  2. Importer 'maplibre-gl/dist/maplibre-gl.css'.
-//  3. Centrer sur le Gabon (lon 11.6, lat -0.8, zoom 5.5) et ajouter un marqueur par parcelle.
-//  4. Au clic sur un marqueur : appeler onSelection(parcelle).
-import Link from 'next/link'
-import type { Parcelle } from '@/lib/types'
-import { MapIcon } from '../icons'
+// Carte MapLibre des sites suivis. Couleur du marqueur selon le verdict de semis.
+// Fond de carte : tuiles raster OpenStreetMap (gratuites, sans clé ; attribution obligatoire, usage léger).
+// Pour un usage public à grande échelle, passer à un fournisseur de tuiles dédié.
+import 'maplibre-gl/dist/maplibre-gl.css'
+import { Map as CarteMapLibre, Marker, NavigationControl, setWorkerUrl, type StyleSpecification } from 'maplibre-gl'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+import type { ApercuSite } from '@/lib/types'
+import { styleVerdict } from '@/lib/verdict'
 
-type Props = {
-  parcelles: Parcelle[]
-  onSelection?: (parcelle: Parcelle) => void
+const STYLE_CARTE: StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">contributeurs OpenStreetMap</a>',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -0.35 } }],
 }
 
-export default function CarteParcelles({ parcelles, onSelection }: Props) {
-  return (
-    <div className="flex flex-col gap-3">
-      {/* Emplacement de la carte MapLibre */}
-      <div className="flex h-56 flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line bg-info-soft text-info-ink">
-        <MapIcon />
-        <p className="m-0 text-sm font-semibold">Carte MapLibre à construire ici</p>
-      </div>
+// Worker copié dans public/ par scripts/copier-worker-maplibre.mjs (Turbopack ne le sert pas tout seul)
+const URL_WORKER = '/maplibre/maplibre-gl-worker.mjs'
 
-      <ul className="m-0 flex list-none flex-col gap-2 p-0">
-        {parcelles.map((p) => (
-          <li key={p.id}>
-            <Link
-              href={`/parcelles/${p.id}`}
-              onClick={() => onSelection?.(p)}
-              className="flex min-h-14 items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 text-ink no-underline hover:ring-2 hover:ring-accent-light"
-            >
-              <span className="flex flex-col">
-                <span className="font-display text-[15px] font-semibold">{p.nom}</span>
-                <span className="font-mono text-[11px] text-muted">
-                  {p.lat}, {p.lon}
-                </span>
-              </span>
-              {p.culture && (
-                <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
-                  {p.culture}
-                </span>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+// Le Gabon en entier
+const LIMITES_GABON: [[number, number], [number, number]] = [
+  [8.6, -4.1],
+  [14.6, 2.4],
+]
+
+type Props = {
+  apercus: ApercuSite[]
+  /** Classes de hauteur, par exemple « h-80 » ou « h-[70vh] » */
+  hauteur?: string
+  /** Version réduite (accueil) : pas de boutons de zoom */
+  compacte?: boolean
+  siteMisEnAvant?: string
+}
+
+export default function CarteParcelles({ apercus, hauteur = 'h-[70vh]', compacte = false, siteMisEnAvant }: Props) {
+  const conteneur = useRef<HTMLDivElement>(null)
+  const carte = useRef<CarteMapLibre | null>(null)
+  const router = useRouter()
+
+  // Création de la carte (une seule fois)
+  useEffect(() => {
+    if (!conteneur.current) return
+    setWorkerUrl(URL_WORKER)
+    const instance = new CarteMapLibre({
+      container: conteneur.current,
+      style: STYLE_CARTE,
+      bounds: LIMITES_GABON,
+      fitBoundsOptions: { padding: 24 },
+      attributionControl: { compact: true },
+      cooperativeGestures: compacte,
+    })
+    if (!compacte) instance.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+    carte.current = instance
+    return () => {
+      instance.remove()
+      carte.current = null
+    }
+  }, [compacte])
+
+  // Marqueurs (recréés quand les données changent)
+  useEffect(() => {
+    const instance = carte.current
+    if (!instance) return
+    const marqueurs = apercus.map((a) => {
+      const style = styleVerdict(a.verdict)
+      const bouton = document.createElement('button')
+      bouton.type = 'button'
+      bouton.className = 'marqueur-site'
+      bouton.style.background = style.marqueur
+      bouton.style.borderColor = style.contour
+      if (a.site.id === siteMisEnAvant) bouton.style.transform = 'scale(1.35)'
+      const libelle = `${a.site.nom} : semis ${style.libelle.toLowerCase()}. Ouvrir la fiche.`
+      bouton.setAttribute('aria-label', libelle)
+      bouton.title = `${a.site.nom} · ${style.libelle}`
+      bouton.addEventListener('click', () => router.push(`/parcelles/${a.site.id}`))
+      return new Marker({ element: bouton }).setLngLat([a.site.lon, a.site.lat]).addTo(instance)
+    })
+    return () => marqueurs.forEach((m) => m.remove())
+  }, [apercus, router, siteMisEnAvant])
+
+  return (
+    <div
+      ref={conteneur}
+      role="region"
+      aria-label="Carte des sites suivis au Gabon"
+      className={`w-full overflow-hidden rounded-[20px] bg-info-soft ${hauteur}`}
+    />
+  )
+}
+
+/** Légende des couleurs de marqueurs */
+export function LegendeCarte() {
+  const entrees = (['favorable', 'risquée', 'défavorable', null] as const).map((v) => ({ v, s: styleVerdict(v) }))
+  return (
+    <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-[13px] text-muted-2">
+      {entrees.map(({ v, s }) => (
+        <li key={String(v)} className="flex items-center gap-2">
+          <span aria-hidden="true" className="size-3.5 rounded-full border-2" style={{ background: s.marqueur, borderColor: s.contour }} />
+          {s.libelle}
+        </li>
+      ))}
+    </ul>
   )
 }

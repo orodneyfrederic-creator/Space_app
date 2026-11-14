@@ -1,49 +1,52 @@
-// Types partagés du front-end. Ils suivent ce que renvoie le serveur (server/src/context/).
-// Si le serveur change un format, on met à jour ce fichier en premier.
+// Contrat d'API S'STACK : copie EXACTE de server/src/types/api.ts (source unique de vérité).
+// Si le serveur change un type, on recopie ce fichier à l'identique.
 
-/** Un site ou une parcelle affichée sur la carte */
-export type Parcelle = {
-  id: string
-  nom: string
+export type Site = { id: string; nom: string; lat: number; lon: number }
+
+export type Verdict = 'favorable' | 'risquée' | 'défavorable'
+
+export type ApercuSite = {
+  site: Site
+  verdict: Verdict | null // null si les données NASA sont indisponibles
+  raison: string
+  pluie30: number | null // mm
+  ecart30: number | null // % par rapport à la normale
+  etatSol: 'sec' | 'correct' | 'humide' | 'inconnu'
+  dernierJour: string | null // AAAA-MM-JJ, dernière date de données NASA
+}
+
+export type PointPluie = { date: string; pluie: number; normale: number } // mm/jour
+
+export type FicheComplete = {
+  site: Site
+  fiche: { texte: string; donnees: Record<string, unknown> } // sortie de ficheParcelle()
+  serie: PointPluie[] // les 30 derniers jours connus, avec la normale du jour (moyenne mensuelle NASA)
+}
+
+export type DemandeConseil = {
   lat: number
   lon: number
+  nomLieu?: string
   culture?: string
+  question: string // 1 à 1000 caractères
+  canal?: 'web' | 'telegram'
 }
 
-/** Les chiffres de la fiche parcelle (champ `donnees` de ficheParcelle() côté serveur) */
-export type DonneesFiche = {
-  dernierJour: string // AAAA-MM-JJ : dernière date de données NASA
-  pluie30: number // mm
-  normale30: number // mm
-  ecart30: number | null // %
-  pluie7: number // mm
-  normale7: number // mm
-  ecart7: number | null // %
-  secs14: number // jours secs sur 14 jours
-  secheresse14: number // plus longue suite sèche (jours)
-  etatSol: 'sec' | 'correct' | 'humide' | 'inconnu'
-  tmax7: number | null // °C
-  solTexture: { site: string; ph: number; argile: number; sable: number; carbone: number } | null
-  evaluation: { verdict: string; raison: string }
-}
-
-/** Ce que renvoie l'agent après une question */
 export type ReponseAgent = {
-  texte: string // le conseil rédigé
+  texte: string
   fournisseur: 'groq' | 'gemini'
-  fiche: { texte: string; donnees: DonneesFiche }
-  transcription?: string // si la question était un vocal
+  modele: string
+  fiche: { texte: string; donnees: Record<string, unknown> }
+  transcription?: string
+  conseilId?: string // id enregistré dans Supabase, si l'enregistrement a réussi
 }
 
-/** Un conseil enregistré dans l'historique */
 export type Conseil = {
   id: string
   date: string // ISO
-  parcelleId: string
+  canal: 'web' | 'telegram'
+  nomLieu: string | null
   question: string
   reponse: string
-  canal: 'web' | 'telegram'
+  fournisseur: string
 }
-
-/** Pluie d'un jour, pour les graphiques */
-export type PointPluie = { date: string; pluie: number }

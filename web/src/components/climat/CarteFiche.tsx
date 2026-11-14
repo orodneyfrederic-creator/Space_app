@@ -1,78 +1,44 @@
-// Résumé lisible de la fiche parcelle : pluie, sol, saison, verdict de la fenêtre de semis.
-import type { DonneesFiche } from '@/lib/types'
+// Résumé lisible de la fiche parcelle : verdict de semis, pluie, sol, saison. Uniquement des chiffres du serveur.
+import { dateFr, ecartFr, LIBELLE_SOL, nombreFr, type FicheLue } from '@/lib/fiche'
+import { BadgeVerdict, EtiquetteNasa, Panneau, Tuile } from '../ui/elements'
 
-// Couleur selon le verdict : favorable / risquée / défavorable
-function styleVerdict(verdict: string) {
-  const v = verdict.toLowerCase()
-  if (v.startsWith('favorable')) return 'bg-accent-soft text-accent'
-  if (v.startsWith('risqu')) return 'bg-warn-bg text-warn'
-  return 'bg-risk-bg text-risk'
-}
-
-function Ecart({ valeur }: { valeur: number | null }) {
-  if (valeur === null) return null
+export default function CarteFiche({ fiche }: { fiche: FicheLue }) {
   return (
-    <span className="font-mono text-[11px] text-muted">
-      {valeur > 0 ? '+' : ''}
-      {valeur} %
-    </span>
-  )
-}
-
-export default function CarteFiche({ fiche }: { fiche: DonneesFiche }) {
-  const { evaluation } = fiche
-  return (
-    <section aria-labelledby="fiche-title" className="flex flex-col gap-3.5 rounded-[20px] bg-surface p-[18px]">
-      <div className="flex items-center justify-between gap-2">
-        <h2 id="fiche-title" className="font-display text-[17px] font-semibold">
-          Fenêtre de semis
-        </h2>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${styleVerdict(evaluation.verdict)}`}>
-          {evaluation.verdict}
-        </span>
-      </div>
-      <p className="m-0 text-sm leading-[1.45] text-muted-2">{evaluation.raison}</p>
-
+    <Panneau titre="Fenêtre de semis" etiquette={<BadgeVerdict verdict={fiche.verdict} taille="grande" />}>
+      <p className="m-0 text-[15px] leading-relaxed text-muted-2">
+        {fiche.raison ? `${fiche.raison.charAt(0).toUpperCase()}${fiche.raison.slice(1)}.` : 'Évaluation indisponible : données NASA manquantes.'}
+      </p>
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3">
-          <span className="text-xs text-muted">Pluie 30 jours</span>
-          <span className="font-mono text-xl font-bold">{fiche.pluie30} mm</span>
-          <span className="flex justify-between text-[11px] text-muted">
-            normale {fiche.normale30} <Ecart valeur={fiche.ecart30} />
-          </span>
+        <Tuile libelle="Pluie 30 jours" valeur={nombreFr(fiche.pluie30)} unite="mm" detail={`normale ${nombreFr(fiche.normale30)} mm · ${ecartFr(fiche.ecart30)}`} />
+        <Tuile libelle="Pluie 7 jours" valeur={nombreFr(fiche.pluie7)} unite="mm" detail={`normale ${nombreFr(fiche.normale7)} mm · ${ecartFr(fiche.ecart7)}`} />
+        <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3.5">
+          <span className="text-xs text-muted">Humidité du sol</span>
+          <span className="font-display text-xl font-semibold">{LIBELLE_SOL[fiche.etatSol]}</span>
+          <span className="text-xs text-muted">habituellement : {LIBELLE_SOL[fiche.solNormal].toLowerCase()}</span>
         </div>
-        <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3">
-          <span className="text-xs text-muted">Pluie 7 jours</span>
-          <span className="font-mono text-xl font-bold">{fiche.pluie7} mm</span>
-          <span className="flex justify-between text-[11px] text-muted">
-            normale {fiche.normale7} <Ecart valeur={fiche.ecart7} />
-          </span>
-        </div>
-        <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3">
-          <span className="text-xs text-muted">État du sol</span>
-          <span className="font-display text-xl font-semibold capitalize">{fiche.etatSol}</span>
-        </div>
-        <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3">
-          <span className="text-xs text-muted">Temp. max 7 j</span>
-          <span className="font-mono text-xl font-bold">{fiche.tmax7 ?? '–'} °C</span>
-        </div>
+        <Tuile libelle="Temp. max (7 jours)" valeur={nombreFr(fiche.tmax7)} unite="°C" />
       </div>
-
-      {fiche.solTexture && (
-        <div className="flex flex-wrap gap-1.5">
-          <span className="rounded-full bg-risk-bg px-2.5 py-[5px] text-xs font-medium text-risk">
-            Argile {fiche.solTexture.argile} %
-          </span>
-          <span className="rounded-full bg-risk-bg px-2.5 py-[5px] text-xs font-medium text-risk">
-            Sable {fiche.solTexture.sable} %
-          </span>
-          <span className="rounded-full bg-risk-bg px-2.5 py-[5px] text-xs font-medium text-risk">
-            pH {fiche.solTexture.ph}
-          </span>
+      <p className="m-0 text-sm text-muted-2">
+        <strong className="font-semibold text-ink">Saison des pluies : </strong>
+        {fiche.demarrage === null
+          ? 'indisponible'
+          : fiche.demarrage.statut === 'demarree'
+            ? `démarrée le ${dateFr(fiche.demarrage.date)}${fiche.demarrage.provisoire ? ' (provisoire)' : ''}`
+            : `pas encore démarrée (observée depuis le ${dateFr(fiche.demarrage.depuis)})`}
+      </p>
+      {fiche.sol && (
+        <div className="flex flex-wrap gap-1.5" aria-label="Sol sur 0 à 30 cm (SoilGrids)">
+          {[`Argile ${nombreFr(fiche.sol.argile)} %`, `Sable ${nombreFr(fiche.sol.sable)} %`, `pH ${nombreFr(fiche.sol.ph)}`, `Carbone ${nombreFr(fiche.sol.carbone)} g/kg`].map((t) => (
+            <span key={t} className="rounded-full bg-risk-bg px-2.5 py-[5px] text-xs font-medium text-risk">
+              {t}
+            </span>
+          ))}
         </div>
       )}
-
-      <p className="m-0 text-[11px] text-muted">Données NASA POWER jusqu&apos;au {fiche.dernierJour}</p>
-    </section>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="m-0 text-xs text-muted">Données jusqu&apos;au {dateFr(fiche.dernierJour)} · règles S&apos;STACK à valider par un agronome</p>
+        <EtiquetteNasa />
+      </div>
+    </Panneau>
   )
 }

@@ -1,0 +1,23 @@
+// Liens de navigation, partagés entre la barre d'onglets (mobile) et la barre latérale (ordinateur).
+import type { ComponentType } from 'react'
+import { ChartIcon, ChatIcon, HomeIcon, MapIcon, SproutIcon } from '../icons'
+
+export type Lien = {
+  href: string
+  label: string
+  icone: ComponentType
+  /** Chemins qui rendent ce lien actif */
+  correspond: readonly string[]
+}
+
+export const LIENS: readonly Lien[] = [
+  { href: '/', label: 'Accueil', icone: HomeIcon, correspond: ['/'] },
+  { href: '/carte', label: 'Carte', icone: MapIcon, correspond: ['/carte', '/parcelles'] },
+  { href: '/donnees', label: 'Données', icone: ChartIcon, correspond: ['/donnees'] },
+  { href: '/cultures', label: 'Cultures', icone: SproutIcon, correspond: ['/cultures'] },
+  { href: '/discuter', label: 'Agent', icone: ChatIcon, correspond: ['/discuter', '/assistant', '/historique'] },
+]
+
+export function estActif(chemin: string, correspond: readonly string[]): boolean {
+  return correspond.some((m) => (m === '/' ? chemin === '/' : chemin === m || chemin.startsWith(`${m}/`)))
+}
