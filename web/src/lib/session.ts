@@ -7,6 +7,21 @@ import type { ReponseAuth, Utilisateur } from './types'
 const CLE = 'sstack:session'
 export const EVENEMENT_SESSION = 'sstack:session'
 
+/**
+ * Mode local sans compte (développement seulement) : NEXT_PUBLIC_MODE_SANS_COMPTE=1 dans web/.env.local.
+ * L'espace agriculteur s'ouvre sans formulaire ni Supabase, avec la session fictive ci-dessous.
+ * Toujours désactivé en production. Les routes du serveur qui exigent un vrai compte
+ * (/conseil, /voix, /conseils, analyses de sol…) répondent alors une erreur, sans déconnecter.
+ */
+export const MODE_SANS_COMPTE = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_MODE_SANS_COMPTE === '1'
+
+export const JETON_LOCAL = 'mode-local-sans-compte'
+
+export const SESSION_LOCALE: ReponseAuth = {
+  jeton: JETON_LOCAL,
+  utilisateur: { id: 'local', nom: 'Mode local (sans compte)', telephone: '+241000000000', siteId: 'tchibanga', telegramLie: false },
+}
+
 // Dernière lecture : useSyncExternalStore exige le même objet tant que rien n'a changé
 let dernierBrut: string | null = null
 let derniereSession: ReponseAuth | null = null

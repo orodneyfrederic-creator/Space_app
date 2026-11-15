@@ -4,7 +4,7 @@
 // ou un jeton expiré (lib/api.ts efface alors la session).
 import { useRouter } from 'next/navigation'
 import { useEffect, type ReactNode } from 'react'
-import { useSession } from '@/lib/session'
+import { enregistrerSession, MODE_SANS_COMPTE, SESSION_LOCALE, useSession } from '@/lib/session'
 
 export default function GardeSession({ children }: { children: ReactNode }) {
   const session = useSession()
@@ -12,6 +12,11 @@ export default function GardeSession({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (session !== null) return
+    // Mode local sans compte (développement) : session fictive au lieu du formulaire de connexion
+    if (MODE_SANS_COMPTE) {
+      enregistrerSession(SESSION_LOCALE)
+      return
+    }
     const ici = `${window.location.pathname}${window.location.search}`
     router.replace(`/connexion?suite=${encodeURIComponent(ici)}`)
   }, [session, router])

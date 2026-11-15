@@ -1,5 +1,5 @@
 // Appels au serveur S'STACK (server/, Hono). Une fonction par route du contrat (lib/types.ts).
-import { effacerSession, enregistrerSession, lireJeton } from './session'
+import { effacerSession, enregistrerSession, JETON_LOCAL, lireJeton } from './session'
 import type {
   Amendement,
   AnalyseSol,
@@ -53,7 +53,8 @@ async function appeler<T>(chemin: string, init?: RequestInit): Promise<T> {
         ? corps.erreur
         : `Erreur du serveur (${reponse.status}).`
     // Jeton expiré ou refusé : on oublie la session, le producteur devra se reconnecter
-    if (reponse.status === 401 && jeton) effacerSession()
+    // (sauf en mode local sans compte : le serveur refuse forcément le jeton fictif)
+    if (reponse.status === 401 && jeton && jeton !== JETON_LOCAL) effacerSession()
     throw new ErreurApi(message, reponse.status)
   }
   return (await reponse.json()) as T
