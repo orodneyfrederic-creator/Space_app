@@ -29,7 +29,7 @@ export const EXPLICATIONS = {
       "Toute la pluie tombée ces 30 derniers jours, en millimètres (mm). « vs normale » compare avec la pluie habituelle à cette période, calculée par la NASA sur de nombreuses années.",
   },
   solHumidite: {
-    titre: 'Humidité du sol',
+    titre: 'État du sol',
     texte: "L'eau dans la terre, là où poussent les racines. Les satellites de la NASA la mesurent. Pour semer, il faut une terre assez humide.",
   },
   tmax: {

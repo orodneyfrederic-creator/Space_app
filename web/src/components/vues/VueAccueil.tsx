@@ -59,7 +59,7 @@ export default function VueAccueil() {
                   <Tuile libelle="Pluie 30 jours" valeur={nombreFr(lue.pluie30)} unite="mm" detail={`${ecartFr(lue.ecart30)} vs normale`} aide={<Infobulle sujet="pluie30" />} />
                   <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3.5">
                     <span className="flex min-h-6 items-center justify-between gap-1 text-xs text-muted">
-                      Humidité du sol
+                      État du sol
                       <Infobulle sujet="solHumidite" />
                     </span>
                     <span className="font-display text-lg leading-tight font-semibold">{LIBELLE_SOL[lue.etatSol]}</span>

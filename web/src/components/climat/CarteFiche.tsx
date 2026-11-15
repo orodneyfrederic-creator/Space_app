@@ -12,7 +12,7 @@ export default function CarteFiche({ fiche }: { fiche: FicheLue }) {
         <Tuile libelle="Pluie 30 jours" valeur={nombreFr(fiche.pluie30)} unite="mm" detail={`normale ${nombreFr(fiche.normale30)} mm · ${ecartFr(fiche.ecart30)}`} />
         <Tuile libelle="Pluie 7 jours" valeur={nombreFr(fiche.pluie7)} unite="mm" detail={`normale ${nombreFr(fiche.normale7)} mm · ${ecartFr(fiche.ecart7)}`} />
         <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3.5">
-          <span className="text-xs text-muted">Humidité du sol</span>
+          <span className="text-xs text-muted">État du sol</span>
           <span className="font-display text-xl font-semibold">{LIBELLE_SOL[fiche.etatSol]}</span>
           <span className="text-xs text-muted">habituellement : {LIBELLE_SOL[fiche.solNormal].toLowerCase()}</span>
         </div>
