@@ -35,6 +35,7 @@ function Onglets({ chemin }: { chemin: string | null }) {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new Event(EVENEMENT_OUVRIR_MENU))}
+        data-visite="menu"
         className={`flex min-h-[52px] cursor-pointer flex-col items-center justify-center gap-[3px] border-0 bg-transparent font-sans text-xs ${
           chemin !== null && !raccourci ? 'font-semibold text-accent' : 'font-medium text-muted'
         }`}

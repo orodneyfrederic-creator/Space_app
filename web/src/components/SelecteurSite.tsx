@@ -3,6 +3,7 @@
 import { getSites } from '@/lib/api'
 import { useSiteChoisi } from '@/lib/site-choisi'
 import { useApi } from '@/lib/use-api'
+import { Infobulle } from './aide/Infobulle'
 
 export default function SelecteurSite() {
   const [siteId, choisir] = useSiteChoisi()
@@ -10,6 +11,7 @@ export default function SelecteurSite() {
   const options = sites.statut === 'pret' ? sites.donnees : []
 
   return (
+    <div data-visite="site" className="flex items-center gap-1">
     <label className="flex items-center gap-2 text-sm text-muted-2">
       <span className="font-medium">Site</span>
       <select
@@ -26,5 +28,7 @@ export default function SelecteurSite() {
         ))}
       </select>
     </label>
+    <Infobulle sujet="site" />
+    </div>
   )
 }

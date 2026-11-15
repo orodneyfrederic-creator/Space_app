@@ -8,8 +8,15 @@ import { api } from './gateways/api.js'
 
 const app = new Hono()
 
-// Seul le front-end S'STACK peut appeler l'API depuis un navigateur
-app.use('/api/*', cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:3000' }))
+// Seul le front-end S'STACK peut appeler l'API depuis un navigateur.
+// En plus de FRONTEND_URL, on accepte le site ouvert en local sous une autre adresse
+// (127.0.0.1, ou l'adresse du PC sur le réseau 192.168.x.x / 10.x.x.x pour une démo).
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:3000'
+const ORIGINE_LOCALE = /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d{2,5}$/
+app.use(
+  '/api/*',
+  cors({ origin: (origine) => (origine === FRONTEND_URL || ORIGINE_LOCALE.test(origine) ? origine : null) }),
+)
 
 app.get('/', (c) => c.text("S'STACK : le serveur fonctionne !"))
 app.route('/api', api)

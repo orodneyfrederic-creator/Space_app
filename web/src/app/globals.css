@@ -121,6 +121,26 @@ body {
   outline-offset: 3px;
 }
 
+/* Visite guidée : cadre lumineux autour de l'élément expliqué, le reste de la page assombri */
+.visite-projecteur {
+  box-shadow: 0 0 0 9999px rgb(17 26 20 / 0.55);
+  outline: 3px solid var(--color-sun); /* Jaune Soleil : accent sur fond sombre, conforme à la charte */
+  transition-property: top, left, width, height;
+  transition-duration: 0.35s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Apparition des bulles (infobulles et étapes de visite) */
+.bulle-apparition {
+  animation: bulle-apparition 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes bulle-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

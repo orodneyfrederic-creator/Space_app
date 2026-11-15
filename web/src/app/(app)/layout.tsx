@@ -1,6 +1,8 @@
 // Espace agriculteur (tableau de bord, carte, données… et les pages à venir du menu).
 // Ordinateur (≥ 1024 px) : sidebar « Farm Intelligence » fixe à gauche + contenu large et centré.
 // Téléphone et tablette : contenu + barre d'onglets en bas, dont « Menu » ouvre la sidebar en tiroir.
+// Visite guidée : lancée seule à la première visite du tableau de bord (components/aide).
+import VisiteGuidee from '@/components/aide/VisiteGuidee'
 import Sidebar from '@/components/navigation/Sidebar'
 import TabBar from '@/components/TabBar'
 
@@ -14,6 +16,7 @@ export default function LayoutApplication({ children }: { children: React.ReactN
         </div>
       </div>
       <TabBar />
+      <VisiteGuidee />
     </>
   )
 }

@@ -83,11 +83,14 @@ export function Erreur({ message, onReessayer }: { message: string; onReessayer?
   )
 }
 
-/** Une valeur chiffrée avec son libellé (chiffres en JetBrains Mono, comme le veut la charte). */
-export function Tuile({ libelle, valeur, unite, detail }: { libelle: string; valeur: string; unite?: string; detail?: ReactNode }) {
+/** Une valeur chiffrée avec son libellé (chiffres en JetBrains Mono, comme le veut la charte). `aide` : bouton « i » à côté du libellé. */
+export function Tuile({ libelle, valeur, unite, detail, aide }: { libelle: string; valeur: string; unite?: string; detail?: ReactNode; aide?: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1 rounded-[14px] bg-paper p-3.5">
-      <span className="text-xs text-muted">{libelle}</span>
+      <span className="flex min-h-6 items-center justify-between gap-1 text-xs text-muted">
+        {libelle}
+        {aide}
+      </span>
       <span className="font-mono text-2xl font-bold">
         {valeur}
         {unite && <span className="ml-1 text-[13px] font-normal">{unite}</span>}

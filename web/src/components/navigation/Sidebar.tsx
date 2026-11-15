@@ -7,16 +7,23 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
+import BoutonVisite, { IcoVisite } from '../aide/BoutonVisite'
+import { Survol } from '../aide/Infobulle'
 import { IcoChevron, IcoFermer, IcoTableau } from '../landing/icones'
 import Logo from './Logo'
 import { CENTRE_AIDE, estPageActive, EVENEMENT_OUVRIR_MENU, PARAMETRES, RUBRIQUES, type PageMenu, type Rubrique, VUE_ENSEMBLE } from './menu'
 
 function Entree({ page, chemin, icone }: { page: PageMenu; chemin: string | null; icone?: ReactNode }) {
   const actif = chemin !== null && estPageActive(chemin, page)
+  // Au survol (souris) ou au clavier : ce que contient la page, en une phrase
+  const description = page.aVenir ? `Bientôt : ${page.description}` : page.description
   return (
+    <Survol texte={description}>
+      {(idDescription) => (
     <Link
       href={page.href}
       aria-current={actif ? 'page' : undefined}
+      aria-describedby={idDescription}
       className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-[14px] no-underline transition-colors ${
         actif ? 'bg-white/12 font-semibold text-white' : 'text-white/70 hover:bg-white/6 hover:text-white'
       }`}
@@ -25,6 +32,8 @@ function Entree({ page, chemin, icone }: { page: PageMenu; chemin: string | null
       <span className="min-w-0 flex-1 truncate">{page.titre}</span>
       {actif && <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-pousse" />}
     </Link>
+      )}
+    </Survol>
   )
 }
 
@@ -101,6 +110,10 @@ function Contenu({ chemin, surFermeture }: { chemin: string | null; surFermeture
           <GroupeRubrique rubrique={PARAMETRES} chemin={chemin} ouvert={estOuverte(PARAMETRES)} surBascule={() => basculer(PARAMETRES)} />
         </ul>
         <Entree page={CENTRE_AIDE} chemin={chemin} icone={<CENTRE_AIDE.icone taille={18} />} />
+        <BoutonVisite className="flex min-h-10 w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 text-left font-sans text-[14px] text-white/70 transition-colors hover:bg-white/6 hover:text-white">
+          <IcoVisite />
+          Visite guidée
+        </BoutonVisite>
       </div>
     </div>
   )
@@ -119,7 +132,7 @@ function Barres({ chemin }: { chemin: string | null }) {
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 lg:block">
+      <aside data-visite="menu" className="fixed inset-y-0 left-0 z-20 hidden w-72 lg:block">
         <Contenu chemin={chemin} />
       </aside>
 

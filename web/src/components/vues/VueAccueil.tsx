@@ -7,6 +7,8 @@ import { dateFr, ecartFr, LIBELLE_SOL, lireFiche, nombreFr } from '@/lib/fiche'
 import { useSiteChoisi } from '@/lib/site-choisi'
 import { useApi } from '@/lib/use-api'
 import { styleVerdict } from '@/lib/verdict'
+import BoutonVisite from '../aide/BoutonVisite'
+import { Infobulle } from '../aide/Infobulle'
 import CarteParcelles from '../carte/CarteParcelles'
 import { SunIcon } from '../icons'
 import SelecteurSite from '../SelecteurSite'
@@ -25,7 +27,12 @@ export default function VueAccueil() {
       <EnTetePage
         titre={nomSite ?? 'Tableau de bord'}
         sousTitre={lue?.dernierJour ? `Données NASA POWER jusqu'au ${dateFr(lue.dernierJour)}` : 'Conseils de semis à partir des données NASA'}
-        actions={<SelecteurSite />}
+        actions={
+          <>
+            <BoutonVisite className="flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 font-sans text-[15px] font-semibold text-accent hover:border-accent" />
+            <SelecteurSite />
+          </>
+        }
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-6">
@@ -36,28 +43,42 @@ export default function VueAccueil() {
           {lue && (
             <>
               <BandeauVerdict verdict={lue.verdict} raison={lue.raison} />
-              <Panneau titre="Conditions actuelles" etiquette={<EtiquetteNasa />}>
+              <div data-visite="conditions" className="min-w-0">
+              <Panneau
+                titre="Conditions actuelles"
+                etiquette={
+                  <span className="flex items-center gap-1">
+                    <EtiquetteNasa />
+                    <Infobulle sujet="nasa" />
+                  </span>
+                }
+              >
                 <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                  <Tuile libelle="Pluie 7 jours" valeur={nombreFr(lue.pluie7)} unite="mm" detail={`${ecartFr(lue.ecart7)} vs normale`} />
-                  <Tuile libelle="Pluie 30 jours" valeur={nombreFr(lue.pluie30)} unite="mm" detail={`${ecartFr(lue.ecart30)} vs normale`} />
+                  <Tuile libelle="Pluie 7 jours" valeur={nombreFr(lue.pluie7)} unite="mm" detail={`${ecartFr(lue.ecart7)} vs normale`} aide={<Infobulle sujet="pluie7" />} />
+                  <Tuile libelle="Pluie 30 jours" valeur={nombreFr(lue.pluie30)} unite="mm" detail={`${ecartFr(lue.ecart30)} vs normale`} aide={<Infobulle sujet="pluie30" />} />
                   <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3.5">
-                    <span className="text-xs text-muted">Humidité du sol</span>
+                    <span className="flex min-h-6 items-center justify-between gap-1 text-xs text-muted">
+                      Humidité du sol
+                      <Infobulle sujet="solHumidite" />
+                    </span>
                     <span className="font-display text-lg leading-tight font-semibold">{LIBELLE_SOL[lue.etatSol]}</span>
                   </div>
-                  <Tuile libelle="Temp. max (7 j)" valeur={nombreFr(lue.tmax7)} unite="°C" />
+                  <Tuile libelle="Temp. max (7 j)" valeur={nombreFr(lue.tmax7)} unite="°C" aide={<Infobulle sujet="tmax" />} />
                 </div>
-                <p className="m-0 text-sm text-muted-2">
+                <p className="m-0 flex flex-wrap items-center gap-x-1 text-sm text-muted-2">
                   <strong className="font-semibold text-ink">Saison des pluies : </strong>
                   {lue.demarrage?.statut === 'demarree'
                     ? `démarrée le ${dateFr(lue.demarrage.date)}`
                     : lue.demarrage?.statut === 'pas_encore'
                       ? 'pas encore démarrée'
                       : 'indisponible'}
+                  <Infobulle sujet="saison" />
                 </p>
                 <Link href="/donnees" className="flex min-h-11 items-center self-start text-sm font-semibold text-accent no-underline hover:text-accent-hover">
                   Voir le détail des données →
                 </Link>
               </Panneau>
+              </div>
             </>
           )}
           <div className="grid gap-2.5 sm:grid-cols-2">
@@ -81,6 +102,7 @@ export default function VueAccueil() {
           {apercu.statut === 'chargement' && <Chargement texte="Chargement des 8 sites…" hauteur="h-72" />}
           {apercu.statut === 'erreur' && <Erreur message={apercu.message} onReessayer={apercu.recharger} />}
           {apercu.statut === 'pret' && (
+            <div data-visite="sites" className="min-w-0">
             <Panneau titre="Sites suivis" etiquette={<Link href="/carte" className="text-sm font-semibold text-accent no-underline hover:text-accent-hover">Carte complète</Link>}>
               <CarteParcelles apercus={apercu.donnees} hauteur="h-64" compacte siteMisEnAvant={siteId} />
               <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
@@ -106,6 +128,7 @@ export default function VueAccueil() {
                 ))}
               </ul>
             </Panneau>
+            </div>
           )}
         </div>
       </div>
@@ -118,10 +141,13 @@ function BandeauVerdict({ verdict, raison }: { verdict: ReturnType<typeof lireFi
   const titre =
     verdict === 'favorable' ? 'Bon moment pour semer' : verdict === 'risquée' ? 'Semis risqué en ce moment' : verdict === 'défavorable' ? 'Mieux vaut attendre pour semer' : 'Évaluation indisponible'
   return (
-    <div role="note" className={`flex items-start gap-3 rounded-2xl px-4 py-4 ${s.badge}`}>
+    <div role="note" data-visite="verdict" className={`flex items-start gap-3 rounded-2xl px-4 py-4 ${s.badge}`}>
       <SunIcon />
-      <div className="flex flex-col gap-0.5">
-        <p className="m-0 font-display text-base font-semibold">{titre}</p>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <p className="m-0 flex items-center justify-between gap-2 font-display text-base font-semibold">
+          {titre}
+          <Infobulle sujet="verdict" />
+        </p>
         <p className="m-0 text-sm leading-[1.45]">{raison ? `${raison.charAt(0).toUpperCase()}${raison.slice(1)}.` : 'Données NASA manquantes.'}</p>
       </div>
     </div>
