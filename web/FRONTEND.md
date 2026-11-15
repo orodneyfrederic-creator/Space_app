@@ -23,7 +23,7 @@ npm run dev                     # → http://localhost:3000
 
 - **Landing (`/`)** : pleine largeur, sans barre latérale (`app/page.tsx`, composants dans `components/landing/`). Les pages de l'application sont dans le groupe `app/(app)/`, dont le layout ajoute la navigation.
 - **Téléphone (< 768 px)** : une colonne, barre d'onglets fixe en bas (`components/TabBar.tsx`).
-- **Tablette et ordinateur (≥ 768 px)** : barre latérale à gauche (`components/navigation/NavLaterale.tsx`), contenu jusqu'à 1200 px, grilles à 2 ou 3 colonnes.
+- **Ordinateur (≥ 1024 px)** : sidebar « Farm Intelligence » fixe à gauche (`components/navigation/Sidebar.tsx`, menu dans `menu.ts`), contenu jusqu'à 1200 px, grilles à 2 ou 3 colonnes. Sous 1024 px, la sidebar s'ouvre en tiroir depuis l'onglet « Menu ».
 - Les deux barres partagent la même liste de liens : `components/navigation/liens.ts`.
 
 ## Organisation
@@ -47,6 +47,8 @@ web/src/
                                 questions rapides par page (questions.ts), sinon POST /api/conseil avec le site choisi ;
                                 ouvrirAgent(question) l'ouvre depuis n'importe quel bouton
     auth/                     ← cadre et formulaires de connexion / inscription
+    aide/                     ← visite guidée du tableau de bord (cibles data-visite="…", étapes dans VisiteGuidee.tsx)
+                                et infobulles « i » / survol (textes en français facile dans lib/explications.ts)
     navigation/menu.ts        ← menu « Farm Intelligence » (sidebar + tiroir mobile) ; les entrées « aVenir »
                                 sont servies par app/(app)/[rubrique]/[page] (page d'attente)
     landing/                  ← en-tête fixe, hero, sections, carrousel ; photos Unsplash dans public/landing/ (crédits : photos.ts)
