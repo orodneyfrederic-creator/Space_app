@@ -61,9 +61,10 @@ export const TON_ACTION: Record<CodeAction, Verdict | null> = {
   indisponible: null,
 }
 
-// ── Couleur d'une couche selon l'humidité : échelle séquentielle sec → saturé, interpolée en OKLab ──
-// Terre Latérite → ocre → Pierre de Mbigou → bleu clair → Bleu Océan
-const PALIERS = ['#B4532A', '#C98B5E', '#E9E2CF', '#7FA6D6', '#3A75C4']
+// ── Couleur d'une couche selon l'humidité : échelle séquentielle sec → saturé ──
+// Terre Latérite → ocre → sable humide → bleu clair → Bleu Océan, interpolée en OKLCH (clarté, intensité, teinte) :
+// l'intensité reste franche entre le sable et le bleu (pas de gris au milieu).
+const PALIERS = ['#B4532A', '#C98B5E', '#D6BE8A', '#6FA0D8', '#3A75C4']
 
 type Lab = [number, number, number]
 
@@ -96,16 +97,27 @@ function oklabVersHex([L, a, b]: Lab): string {
 
 const PALIERS_LAB = PALIERS.map(hexVersOklab)
 
+/** OKLab → OKLCH (clarté, intensité, teinte en radians) */
+const versLch = ([L, a, b]: Lab): Lab => [L, Math.hypot(a, b), Math.atan2(b, a)]
+const PALIERS_LCH = PALIERS_LAB.map(versLch)
+
 /** Couleur de remplissage pour un indice 0–1 ; null → gris neutre. */
 export function couleurHumidite(indice: number | null): string {
   if (indice === null) return '#D2C9B1'
   const x = Math.min(1, Math.max(0, indice)) * (PALIERS.length - 1)
   const i = Math.min(PALIERS.length - 2, Math.floor(x))
   const t = x - i
-  const a = PALIERS_LAB[i]
-  const b = PALIERS_LAB[i + 1]
+  const a = PALIERS_LCH[i]
+  const b = PALIERS_LCH[i + 1]
   if (!a || !b) return PALIERS[0] ?? '#B4532A'
-  return oklabVersHex([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t])
+  // Teinte : par le plus court chemin sur le cercle
+  let dh = b[2] - a[2]
+  if (dh > Math.PI) dh -= 2 * Math.PI
+  if (dh < -Math.PI) dh += 2 * Math.PI
+  const L = a[0] + (b[0] - a[0]) * t
+  const C = a[1] + (b[1] - a[1]) * t
+  const h = a[2] + dh * t
+  return oklabVersHex([L, C * Math.cos(h), C * Math.sin(h)])
 }
 
 /** Texte lisible sur une couleur de fond : Noir Ébène sur fond clair, blanc sur fond foncé (luminance relative). */
@@ -114,4 +126,10 @@ export function texteSur(hex: string): string {
   const lum = 0.2126 * (r ?? 0) + 0.7152 * (g ?? 0) + 0.0722 * (b ?? 0)
   // Contraste avec le blanc (1,05 / (lum + 0,05)) contre le noir ébène (~(lum + 0,05) / 0,0125)
   return (lum + 0.05) / 0.0625 > 1.05 / (lum + 0.05) ? '#111A14' : '#FFFFFF'
+}
+
+/** Même teinte, plus sombre ou plus claire (facteur sur la clarté OKLab : 0,85 = 15 % plus sombre). Faces du bloc 3D. */
+export function nuancer(hex: string, facteur: number): string {
+  const [L, a, b] = hexVersOklab(hex)
+  return oklabVersHex([Math.min(1, L * facteur), a, b])
 }

@@ -441,3 +441,85 @@ body {
     transform: none;
   }
 }
+
+/* ── Bloc de sol 3D (components/sol/CoupeSol.tsx) : mouvements continus, transform et opacity seulement ── */
+.coupe-pluie line {
+  animation: coupe-pluie 900ms linear infinite;
+  animation-delay: var(--delai, 0ms);
+}
+@keyframes coupe-pluie {
+  from {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+}
+.coupe-plante {
+  transform-box: view-box;
+  animation: coupe-plante 5s ease-in-out infinite alternate;
+}
+@keyframes coupe-plante {
+  from {
+    transform: rotate(-2.5deg);
+  }
+  to {
+    transform: rotate(2.5deg);
+  }
+}
+.coupe-goutte {
+  animation: coupe-goutte 2.8s ease-in-out infinite alternate;
+  animation-delay: var(--delai, 0ms);
+}
+@keyframes coupe-goutte {
+  from {
+    transform: translateY(-1.5px);
+  }
+  to {
+    transform: translateY(1.5px);
+  }
+}
+.coupe-rayons {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: coupe-rayons 24s linear infinite;
+}
+@keyframes coupe-rayons {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.coupe-nuage {
+  animation: coupe-nuage 7s ease-in-out infinite alternate;
+}
+@keyframes coupe-nuage {
+  from {
+    transform: translateX(-4px);
+  }
+  to {
+    transform: translateX(4px);
+  }
+}
+.coupe-face {
+  transition: fill 600ms var(--ease-standard);
+}
+@media (prefers-reduced-motion: reduce) {
+  .coupe-pluie line,
+  .coupe-plante,
+  .coupe-goutte,
+  .coupe-rayons,
+  .coupe-nuage {
+    animation: none;
+  }
+  .coupe-pluie line {
+    opacity: 1;
+  }
+  .coupe-face {
+    transition: none;
+  }
+}
