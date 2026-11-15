@@ -19,3 +19,22 @@ export function trouverSite(nom: string): Site | undefined {
   const cherche = simple(nom)
   return SITES.find((s) => simple(s.nom).includes(cherche))
 }
+
+/** Distance à vol d'oiseau entre deux points, en km (formule de haversine, calcul hors ligne). */
+export function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const rad = (d: number) => (d * Math.PI) / 180
+  const dLat = rad(lat2 - lat1)
+  const dLon = rad(lon2 - lon1)
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+/** Le site S'STACK le plus proche d'un point, avec la distance arrondie au km. Aucune API de géocodage. */
+export function siteLePlusProche(lat: number, lon: number): { site: Site; distanceKm: number } | null {
+  let meilleur: { site: Site; distanceKm: number } | null = null
+  for (const site of SITES) {
+    const d = distanceKm(lat, lon, site.lat, site.lon)
+    if (!meilleur || d < meilleur.distanceKm) meilleur = { site, distanceKm: d }
+  }
+  return meilleur && { site: meilleur.site, distanceKm: Math.round(meilleur.distanceKm) }
+}

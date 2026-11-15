@@ -5,12 +5,13 @@ import { Hono, type Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import { repondreClimat } from '../agents/climat.js'
+import { etatSolPosition } from '../context/etat-sol.js'
 import { ficheParcelle } from '../context/fiche-parcelle.js'
 import { codeMois, debutSaisonCourante } from '../context/indicateurs.js'
 import { getClimatologie, getQuotidien, type Jour } from '../context/nasa-power.js'
 import { SITES } from '../context/sites.js'
 import { enregistrerConseil, listerConseils } from '../db/supabase.js'
-import type { ApercuSite, Conseil, DemandeConseil, FicheComplete, PointPluie, ReponseAgent, Site } from '../types/api.js'
+import type { ApercuSite, Conseil, DemandeConseil, EtatSol, FicheComplete, PointPluie, ReponseAgent, Site } from '../types/api.js'
 import { exigerCompte, routesAuth, type VariablesAuth } from './auth.js'
 import { autoriserAppel, premierMessage, SchemaDemandeConseil } from './guardrails.js'
 import { routesSols } from './sols.js'
@@ -110,6 +111,18 @@ api.get('/fiche', async (c) => {
   if (!p.success) requeteInvalide('Paramètres attendus : lat (entre -90 et 90), lon (entre -180 et 180) et nom (facultatif).')
   const { lat, lon, nom } = p.data
   return c.json<FicheComplete>(await ficheComplete({ id: 'position', nom: nom ?? 'Parcelle du producteur', lat, lon }))
+})
+
+// État du sol à une position : 3 couches, température de surface, verdict et phrase d'action (accès libre, comme /fiche)
+api.get('/etat-sol', async (c) => {
+  const p = RequetePosition.safeParse(c.req.query())
+  if (!p.success) requeteInvalide('Paramètres attendus : lat (entre -90 et 90) et lon (entre -180 et 180).')
+  try {
+    return c.json<EtatSol>(await etatSolPosition(p.data.lat, p.data.lon))
+  } catch (erreur) {
+    console.error('[api] état du sol indisponible :', erreur)
+    throw new HTTPException(503, { message: 'Les données du sol de la NASA sont momentanément indisponibles. Réessayez dans un instant.' })
+  }
 })
 
 // ── Phase 2 et 3 : l'agent répond (texte, voix) et l'historique ──

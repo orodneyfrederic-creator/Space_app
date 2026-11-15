@@ -12,8 +12,12 @@ const VALEUR_MANQUANTE = -999 // NASA POWER écrit -999 quand une donnée manque
 // Paramètres NASA demandés (community=AG : agriculture)
 //  PRECTOTCORR : pluie (mm/jour)             T2M_MAX / T2M_MIN : température max / min (°C)
 //  RH2M : humidité de l'air (%)              GWETROOT : humidité du sol au niveau des racines (0 = sec, 1 = saturé)
-const PARAMS_QUOTIDIEN = ['PRECTOTCORR', 'T2M_MAX', 'T2M_MIN', 'RH2M', 'GWETROOT'] as const
-const PARAMS_CLIMATO = ['PRECTOTCORR', 'GWETROOT'] as const
+//  GWETTOP : humidité du sol en surface (0 à 5 cm environ)    GWETPROF : humidité du profil complet (sol profond)
+//  TS : température de surface de la Terre (°C, « earth skin temperature ») : ce n'est PAS la température du sol en profondeur
+const PARAMS_QUOTIDIEN = ['PRECTOTCORR', 'T2M_MAX', 'T2M_MIN', 'RH2M', 'GWETTOP', 'GWETROOT', 'GWETPROF', 'TS'] as const
+const PARAMS_CLIMATO = ['PRECTOTCORR', 'GWETTOP', 'GWETROOT', 'GWETPROF', 'TS'] as const
+// Version des clés de cache : à changer quand la forme des données change (évite de relire d'anciennes entrées)
+const VERSION_CACHE = 'v2'
 
 export const MOIS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'] as const
 export type CodeMois = (typeof MOIS)[number]
@@ -25,13 +29,20 @@ export type Jour = {
   tmax: number | null
   tmin: number | null
   humiditeAir: number | null
-  solRacines: number | null
+  solSurface: number | null // indice 0–1 (GWETTOP)
+  solRacines: number | null // indice 0–1 (GWETROOT)
+  solProfond: number | null // indice 0–1 (GWETPROF)
+  tempSurface: number | null // °C (TS)
 }
 
 /** Normales mensuelles : pluie en mm/jour et humidité du sol, pour chaque mois. */
 export type Climatologie = {
   pluieMmParJour: Record<CodeMois, number>
   solRacines: Record<CodeMois, number>
+  // Paramètres ajoutés ensuite : lecture tolérante, null si la NASA ne les renvoie pas
+  solSurface: Record<CodeMois, number | null>
+  solProfond: Record<CodeMois, number | null>
+  tempSurface: Record<CodeMois, number | null>
 }
 
 // --- Validation de la réponse NASA (on ne fait jamais confiance aveuglément à une API externe) ---
@@ -101,7 +112,7 @@ export async function getQuotidien(lat: number, lon: number, debut: Date, fin: D
     `${URL_QUOTIDIEN}?parameters=${PARAMS_QUOTIDIEN.join(',')}&community=AG` +
     `&latitude=${la}&longitude=${lo}&start=${formatNasa(debut)}&end=${formatNasa(fin)}&format=JSON`
 
-  return avecCache(`q:${la}:${lo}:${formatNasa(debut)}:${formatNasa(fin)}`, SIX_HEURES, async () => {
+  return avecCache(`${VERSION_CACHE}:q:${la}:${lo}:${formatNasa(debut)}:${formatNasa(fin)}`, SIX_HEURES, async () => {
     const p = await appelerNasa(url)
     const dates = Object.keys(p.PRECTOTCORR ?? {}).sort()
     return dates.map((d) => ({
@@ -110,7 +121,10 @@ export async function getQuotidien(lat: number, lon: number, debut: Date, fin: D
       tmax: versNombre(p.T2M_MAX?.[d]),
       tmin: versNombre(p.T2M_MIN?.[d]),
       humiditeAir: versNombre(p.RH2M?.[d]),
+      solSurface: versNombre(p.GWETTOP?.[d]),
       solRacines: versNombre(p.GWETROOT?.[d]),
+      solProfond: versNombre(p.GWETPROF?.[d]),
+      tempSurface: versNombre(p.TS?.[d]),
     }))
   })
 }
@@ -123,13 +137,24 @@ export async function getClimatologie(lat: number, lon: number): Promise<Climato
     `${URL_CLIMATO}?parameters=${PARAMS_CLIMATO.join(',')}&community=AG` +
     `&latitude=${la}&longitude=${lo}&format=JSON`
 
-  return avecCache(`c:${la}:${lo}`, TRENTE_JOURS, async () => {
+  return avecCache(`${VERSION_CACHE}:c:${la}:${lo}`, TRENTE_JOURS, async () => {
     const p = await appelerNasa(url)
     const lire = (nom: string) => {
       const s = p[nom]
       if (!s) throw new Error(`Climatologie NASA : paramètre ${nom} absent`)
       return Object.fromEntries(MOIS.map((m) => [m, s[m] ?? 0])) as Record<CodeMois, number>
     }
-    return { pluieMmParJour: lire('PRECTOTCORR'), solRacines: lire('GWETROOT') }
+    // Nouveaux paramètres : absents → null, sans lever d'exception
+    const lireTolerant = (nom: string) => {
+      const s = p[nom]
+      return Object.fromEntries(MOIS.map((m) => [m, versNombre(s?.[m])])) as Record<CodeMois, number | null>
+    }
+    return {
+      pluieMmParJour: lire('PRECTOTCORR'),
+      solRacines: lire('GWETROOT'),
+      solSurface: lireTolerant('GWETTOP'),
+      solProfond: lireTolerant('GWETPROF'),
+      tempSurface: lireTolerant('TS'),
+    }
   })
 }

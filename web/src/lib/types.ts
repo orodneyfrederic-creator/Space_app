@@ -138,3 +138,40 @@ export type HumiditeSol = {
   source: string // ex. « NASA POWER (GWETROOT), modèle à environ 50 km »
   points: PointHumidite[] // les 60 derniers jours
 }
+
+// ── État du sol à une position (GET /api/etat-sol) ──
+
+export type Tendance = 'hausse' | 'baisse' | 'stable'
+
+export type CoucheSol = {
+  nom: 'surface' | 'racines' | 'profondeur'
+  indice: number | null // 0–1, dernier jour connu
+  normale: number | null // normale du mois (climatologie NASA)
+  etat: 'sec' | 'correct' | 'humide' | 'inconnu'
+  tendance7j: Tendance | null
+}
+
+export type PointEtatSol = {
+  date: string // AAAA-MM-JJ
+  surface: number | null
+  racines: number | null
+  profondeur: number | null
+  tempSurface: number | null // °C
+  tmax: number | null // °C, air à 2 m
+  pluie: number | null // mm/jour
+}
+
+export type EtatSol = {
+  position: { lat: number; lon: number }
+  lieuProche: { site: Site; distanceKm: number } | null // site S'STACK le plus proche (haversine)
+  echelle: string // « Maille NASA POWER d'environ 50 km »
+  dernierJour: string | null
+  couches: CoucheSol[] // toujours dans l'ordre surface, racines, profondeur
+  tempSurface: { actuelle: number | null; moyenne7j: number | null; normale: number | null; tendance7j: Tendance | null }
+  pluie7: number | null
+  pluie30: number | null
+  verdict: Verdict | null
+  raison: string
+  action: string // UNE phrase d'action, calculée par règles
+  serie: PointEtatSol[] // les 30 derniers jours connus
+}

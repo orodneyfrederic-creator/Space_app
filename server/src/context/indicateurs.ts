@@ -35,14 +35,18 @@ export function plusLongueSecheresse(jours: Jour[]): number {
 }
 
 /** Moyenne d'un champ sur les n derniers jours (valeurs manquantes ignorées). */
-export function moyenne(jours: Jour[], n: number, champ: 'tmax' | 'tmin' | 'humiditeAir' | 'solRacines'): number | null {
+export function moyenne(
+  jours: Jour[],
+  n: number,
+  champ: 'tmax' | 'tmin' | 'humiditeAir' | 'solSurface' | 'solRacines' | 'solProfond' | 'tempSurface',
+): number | null {
   const valeurs = derniers(jours, n).map((j) => j[champ]).filter((v): v is number => v !== null)
   if (valeurs.length === 0) return null
   return arrondi1(valeurs.reduce((s, v) => s + v, 0) / valeurs.length)
 }
 
 /** Dernière valeur connue d'un champ. */
-export function derniereValeur(jours: Jour[], champ: 'solRacines' | 'tmax'): number | null {
+export function derniereValeur(jours: Jour[], champ: 'solSurface' | 'solRacines' | 'solProfond' | 'tempSurface' | 'tmax'): number | null {
   for (let i = jours.length - 1; i >= 0; i--) {
     const v = jours[i]?.[champ]
     if (v !== null && v !== undefined) return v
@@ -135,3 +139,75 @@ export function evaluerFenetre(demarrage: Demarrage, sol: ReturnType<typeof etat
 }
 
 const arrondi1 = (x: number) => Math.round(x * 10) / 10
+
+// ── État du sol par couche (surface, racines, profondeur) et température de surface ──
+
+export type Tendance = 'hausse' | 'baisse' | 'stable'
+export type EtatCouche = ReturnType<typeof etatSol>
+
+/** Écart minimal pour parler de hausse ou de baisse. [À VALIDER] */
+export const SEUIL_TENDANCE_INDICE = 0.03 // humidité du sol : 0,03 point d'indice (3 points de %)
+export const SEUIL_TENDANCE_TEMP = 0.5 // température : 0,5 °C
+
+/**
+ * Tendance : moyenne des `jours` dernières valeurs connues comparée à celle des `jours` d'avant.
+ * Les valeurs manquantes (null) sont ignorées. null s'il y a moins de 3 valeurs dans l'une des deux périodes.
+ */
+export function tendance(valeurs: (number | null)[], seuil: number, jours = 7): Tendance | null {
+  const connues = valeurs.filter((v): v is number => v !== null)
+  const recentes = connues.slice(-jours)
+  const avant = connues.slice(-2 * jours, -jours)
+  if (recentes.length < 3 || avant.length < 3) return null
+  const moy = (t: number[]) => t.reduce((s, v) => s + v, 0) / t.length
+  const ecart = moy(recentes) - moy(avant)
+  if (Math.abs(ecart) < seuil) return 'stable'
+  return ecart > 0 ? 'hausse' : 'baisse'
+}
+
+/** État d'une couche de sol : mêmes seuils que etatSol (< 0,4 sec ; ≤ 0,7 correct ; sinon humide). */
+export const etatCouche = (indice: number | null): EtatCouche => etatSol(indice)
+
+/** Écart à la normale d'un indice 0–1, en points de pourcentage arrondis (0,62 contre 0,54 → +8). */
+export function ecartNormaleIndice(actuel: number | null, normale: number | null): number | null {
+  if (actuel === null || normale === null) return null
+  return Math.round((actuel - normale) * 100)
+}
+
+/** Seuil de pluie sur 7 jours au-delà duquel un sol déjà humide risque l'engorgement. [À VALIDER] */
+export const PLUIE7_FORTE_MM = 50
+
+export type EntreeAction = {
+  verdict: Evaluation['verdict'] | null
+  saisonDemarree: boolean
+  surface: EtatCouche
+  racines: EtatCouche
+  tendanceRacines: Tendance | null
+  pluie7: number | null
+}
+
+/**
+ * UNE phrase d'action, calculée par règles (jamais par le LLM), vérifiées dans cet ordre :
+ * 1. données manquantes  2. sol gorgé d'eau  3. surface sèche sans pluie  4. bon moment
+ * 5. saison pas démarrée  6. sol sec  7. conditions incertaines.
+ */
+export function actionRecommandee(e: EntreeAction): string {
+  if (e.verdict === null || e.racines === 'inconnu' || e.pluie7 === null) {
+    return "Données NASA indisponibles pour l'instant : réessayez plus tard."
+  }
+  if (e.racines === 'humide' && e.tendanceRacines === 'hausse' && e.pluie7 >= PLUIE7_FORTE_MM) {
+    return "Sol gorgé d'eau : évitez de travailler la terre, risque de pourriture des boutures."
+  }
+  if (e.surface === 'sec' && e.pluie7 < 10) {
+    return "Sol sec en surface : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer."
+  }
+  if (e.verdict === 'favorable' && (e.racines === 'correct' || e.racines === 'humide')) {
+    return "Conditions réunies : vous pouvez semer ou bouturer cette semaine."
+  }
+  if (!e.saisonDemarree) {
+    return "La saison des pluies n'a pas encore démarré : attendez avant de semer ou de bouturer."
+  }
+  if (e.racines === 'sec') {
+    return "Sol trop sec au niveau des racines : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer."
+  }
+  return 'Conditions incertaines : attendez quelques jours de pluies régulières avant de bouturer.'
+}
