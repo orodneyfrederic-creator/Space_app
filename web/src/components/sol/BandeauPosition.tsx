@@ -3,10 +3,12 @@
 // « Me localiser » demande le GPS (toujours après un clic). Si c'est refusé ou impossible,
 // le panneau « Changer de lieu » s'ouvre : toucher la carte, ou choisir l'une des 8 villes.
 import { useState } from 'react'
+import { joursDeRetard } from '@/lib/etat-sol'
 import { dateFr } from '@/lib/fiche'
 import type { EtatSol } from '@/lib/types'
 import { nomCourt, type LieuSol } from '@/lib/use-lieu-sol'
 import { MESSAGES_LOCALISATION, type EtatLocalisation } from '@/lib/use-position'
+import { Infobulle } from '../aide/Infobulle'
 import { PinIcon } from '../icons'
 import CartePointeur from './CartePointeur'
 
@@ -59,12 +61,18 @@ export default function BandeauPosition({ lieu, etatSol, localisation, sites, lo
             <p className="m-0 font-display text-base font-semibold text-ink" aria-live="polite">
               {lieu ? libelleLieu(lieu, etatSol) : 'Lieu en cours de chargement…'}
             </p>
-            <p className="m-0 text-[13px] leading-snug text-muted-2">
+            <p className="m-0 flex flex-wrap items-center gap-x-1 text-[13px] leading-snug text-muted-2">
               {etatSol?.dernierJour ? `Données NASA du ${dateFr(etatSol.dernierJour)}` : 'Données NASA'}
               {' · '}zone d&apos;environ 50 km
               {lieu && lieu.source !== 'ville' && localisation !== 'trouve' && ` · position du ${jourMois(lieu.position.date)}`}
               {lieu?.source === 'gps' && lieu.position.precisionM !== null && ` · précision ${lieu.position.precisionM} m`}
+              <Infobulle sujet="maille" />
             </p>
+            {etatSol?.dernierJour && joursDeRetard(etatSol.dernierJour) > 5 && (
+              <p className="m-0 mt-1 self-start rounded-full bg-warn-bg px-2.5 py-0.5 text-[12px] font-semibold text-warn-ink">
+                Données du {jourMois(etatSol.dernierJour + 'T')} : la NASA publie avec quelques jours de retard
+              </p>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">

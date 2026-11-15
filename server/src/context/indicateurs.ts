@@ -185,29 +185,51 @@ export type EntreeAction = {
   pluie7: number | null
 }
 
+export type CodeAction = 'indisponible' | 'engorge' | 'surface_seche' | 'semer' | 'saison' | 'sol_sec' | 'incertain'
+
+/** La phrase affichée pour chaque code d'action. */
+export const TEXTES_ACTION: Record<CodeAction, string> = {
+  indisponible: "Données NASA indisponibles pour l'instant : réessayez plus tard.",
+  engorge: "Sol gorgé d'eau : évitez de travailler la terre, risque de pourriture des boutures.",
+  surface_seche: "Sol sec en surface : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer.",
+  semer: 'Conditions réunies : vous pouvez semer ou bouturer cette semaine.',
+  saison: "La saison des pluies n'a pas encore démarré : attendez avant de semer ou de bouturer.",
+  sol_sec: "Sol trop sec au niveau des racines : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer.",
+  incertain: 'Conditions incertaines : attendez quelques jours de pluies régulières avant de bouturer.',
+}
+
 /**
- * UNE phrase d'action, calculée par règles (jamais par le LLM), vérifiées dans cet ordre :
+ * Code de l'action recommandée, calculé par règles (jamais par le LLM), vérifiées dans cet ordre :
  * 1. données manquantes  2. sol gorgé d'eau  3. surface sèche sans pluie  4. bon moment
  * 5. saison pas démarrée  6. sol sec  7. conditions incertaines.
  */
-export function actionRecommandee(e: EntreeAction): string {
-  if (e.verdict === null || e.racines === 'inconnu' || e.pluie7 === null) {
-    return "Données NASA indisponibles pour l'instant : réessayez plus tard."
-  }
-  if (e.racines === 'humide' && e.tendanceRacines === 'hausse' && e.pluie7 >= PLUIE7_FORTE_MM) {
-    return "Sol gorgé d'eau : évitez de travailler la terre, risque de pourriture des boutures."
-  }
-  if (e.surface === 'sec' && e.pluie7 < 10) {
-    return "Sol sec en surface : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer."
-  }
-  if (e.verdict === 'favorable' && (e.racines === 'correct' || e.racines === 'humide')) {
-    return "Conditions réunies : vous pouvez semer ou bouturer cette semaine."
-  }
-  if (!e.saisonDemarree) {
-    return "La saison des pluies n'a pas encore démarré : attendez avant de semer ou de bouturer."
-  }
-  if (e.racines === 'sec') {
-    return "Sol trop sec au niveau des racines : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer."
-  }
-  return 'Conditions incertaines : attendez quelques jours de pluies régulières avant de bouturer.'
+export function codeAction(e: EntreeAction): CodeAction {
+  if (e.verdict === null || e.racines === 'inconnu' || e.pluie7 === null) return 'indisponible'
+  if (e.racines === 'humide' && e.tendanceRacines === 'hausse' && e.pluie7 >= PLUIE7_FORTE_MM) return 'engorge'
+  if (e.surface === 'sec' && e.pluie7 < 10) return 'surface_seche'
+  if (e.verdict === 'favorable' && (e.racines === 'correct' || e.racines === 'humide')) return 'semer'
+  if (!e.saisonDemarree) return 'saison'
+  if (e.racines === 'sec') return 'sol_sec'
+  return 'incertain'
 }
+
+/** UNE phrase d'action (voir codeAction). */
+export const actionRecommandee = (e: EntreeAction): string => TEXTES_ACTION[codeAction(e)]
+
+export type NiveauAlerte = 'alerte' | 'vigilance' | 'ok'
+
+/**
+ * Niveau d'alerte d'une zone (accueil du conseiller) :
+ * - alerte    : racines sèches qui continuent de sécher, ou racines humides avec des pluies en hausse ;
+ * - vigilance : racines sèches ou humides, ou données manquantes ;
+ * - ok        : sinon.
+ */
+export function niveauAlerte(racines: EtatCouche, tendanceRacines: Tendance | null, tendancePluie: Tendance | null): NiveauAlerte {
+  if (racines === 'sec' && tendanceRacines === 'baisse') return 'alerte'
+  if (racines === 'humide' && tendancePluie === 'hausse') return 'alerte'
+  if (racines === 'sec' || racines === 'humide' || racines === 'inconnu') return 'vigilance'
+  return 'ok'
+}
+
+/** Écart minimal de pluie moyenne (mm/jour) entre deux semaines pour parler de hausse ou de baisse. [À VALIDER] */
+export const SEUIL_TENDANCE_PLUIE = 2

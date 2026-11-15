@@ -4,6 +4,8 @@ import assert from 'node:assert/strict'
 import { construireEtatSol } from '../context/etat-sol.js'
 import {
   actionRecommandee,
+  codeAction,
+  niveauAlerte,
   ecartNormaleIndice,
   etatCouche,
   SEUIL_TENDANCE_INDICE,
@@ -59,6 +61,17 @@ test('saison pas démarrée', () =>
   assert.match(actionRecommandee({ ...base, verdict: 'défavorable', saisonDemarree: false }), /pas encore démarré/))
 test('racines sèches', () => assert.match(actionRecommandee({ ...base, verdict: 'défavorable', racines: 'sec' }), /trop sec/))
 test('conditions incertaines', () => assert.match(actionRecommandee({ ...base, verdict: 'risquée' }), /incertaines/))
+
+test('code d\'action', () => {
+  assert.equal(codeAction(base), 'semer')
+  assert.equal(codeAction({ ...base, racines: 'humide', tendanceRacines: 'hausse', pluie7: 80 }), 'engorge')
+})
+
+console.log('niveauAlerte')
+test('sec et en baisse → alerte', () => assert.equal(niveauAlerte('sec', 'baisse', null), 'alerte'))
+test('humide et pluie en hausse → alerte', () => assert.equal(niveauAlerte('humide', 'stable', 'hausse'), 'alerte'))
+test('sec mais stable → vigilance', () => assert.equal(niveauAlerte('sec', 'stable', null), 'vigilance'))
+test('correct → ok', () => assert.equal(niveauAlerte('correct', 'baisse', 'hausse'), 'ok'))
 
 console.log('lieu le plus proche (haversine)')
 test('Libreville → Lambaréné ≈ 150 km', () => {

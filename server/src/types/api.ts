@@ -168,6 +168,9 @@ export type PointEtatSol = {
   pluie: number | null // mm/jour
 }
 
+export type CodeAction = 'indisponible' | 'engorge' | 'surface_seche' | 'semer' | 'saison' | 'sol_sec' | 'incertain'
+export type NiveauAlerte = 'alerte' | 'vigilance' | 'ok'
+
 export type EtatSol = {
   position: { lat: number; lon: number }
   lieuProche: { site: Site; distanceKm: number } | null // site S'STACK le plus proche (haversine)
@@ -176,9 +179,26 @@ export type EtatSol = {
   couches: CoucheSol[] // toujours dans l'ordre surface, racines, profondeur
   tempSurface: { actuelle: number | null; moyenne7j: number | null; normale: number | null; tendance7j: Tendance | null }
   pluie7: number | null
+  ecartPluie7: number | null // % par rapport à la normale des 7 mêmes jours
   pluie30: number | null
   verdict: Verdict | null
   raison: string
+  codeAction: CodeAction // la règle retenue (sert au titre de la carte d'action)
   action: string // UNE phrase d'action, calculée par règles
   serie: PointEtatSol[] // les 30 derniers jours connus
+}
+
+/** Résumé léger d'un site (GET /api/etat-sol/sites), pour les accueils conseiller et organisation. */
+export type ResumeEtatSol = {
+  site: Site
+  dernierJour: string | null
+  verdict: Verdict | null
+  codeAction: CodeAction
+  action: string
+  racines: CoucheSol
+  ecartRacines: number | null // points de % par rapport à la normale du mois
+  tempSurface: number | null // °C, dernier jour connu
+  pluie7: number | null
+  pluie30: number | null
+  alerte: NiveauAlerte
 }

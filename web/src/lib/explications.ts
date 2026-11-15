@@ -41,6 +41,30 @@ export const EXPLICATIONS = {
     texte:
       'Elle a démarré quand il a plu au moins 20 mm en 3 jours, sans longue période sèche juste après. On compte à partir du 1er septembre.',
   },
+  solSurface: {
+    titre: 'Humidité en surface',
+    texte: 'L’eau dans les tout premiers centimètres de terre. Elle change vite : elle monte après une pluie et baisse au soleil. 0 % = terre sèche, 100 % = terre gorgée d’eau. (NASA : GWETTOP)',
+  },
+  solRacines: {
+    titre: 'Eau au niveau des racines',
+    texte: 'L’eau dans la terre là où vivent les racines des boutures. C’est la plus importante pour planter. 0 % = sec, 100 % = gorgé d’eau. (NASA : GWETROOT)',
+  },
+  solProfond: {
+    titre: 'Humidité en profondeur',
+    texte: 'L’eau gardée plus bas dans le sol, la réserve. Elle change lentement, sur plusieurs semaines. (NASA : GWETPROF)',
+  },
+  tempSurface: {
+    titre: 'Température de surface du sol',
+    texte: 'La chaleur de la surface de la terre, vue par satellite. Ce n’est pas la température en profondeur. (NASA : TS)',
+  },
+  maille: {
+    titre: 'Zone d’environ 50 km',
+    texte: 'La NASA donne une valeur pour un grand carré d’environ 50 km de côté. Votre position choisit le bon carré, mais ne mesure pas votre champ au mètre près.',
+  },
+  action: {
+    titre: 'Que faire maintenant',
+    texte: 'Cette phrase vient de règles fixes : l’eau dans le sol, la pluie et le démarrage de la saison. Mbolo peut vous l’expliquer, mais il ne la change pas.',
+  },
 } as const satisfies Record<string, Explication>
 
 export type SujetExplication = keyof typeof EXPLICATIONS

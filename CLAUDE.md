@@ -53,4 +53,5 @@ cd server && npx tsx src/scripts/tester-agent.ts   # 11 questions → docs/resul
 
 ## En cours
 - Comptes : fait (formulaires branchés, `/bienvenue`, `GardeSession` sur `app/(app)/`, carte Telegram). Pas encore de récupération du mot de passe oublié.
-- Migration `002_utilisateurs.sql` à exécuter ; test de bout en bout du bot Telegram.
+- Migrations à exécuter dans Supabase : `004_sols.sql`, `005_profil.sql` (profil du compte ; sans elle, tout le monde est « producteur » et le changement de profil répond 503).
+- Accueil par profil (producteur, conseiller, organisation) et coupe du sol : voir `web/FRONTEND.md`. Telegram : « 📍 Envoyer ma position » répond avec l'état du sol.

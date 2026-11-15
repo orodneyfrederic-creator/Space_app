@@ -151,3 +151,14 @@ Tout est en CSS (`src/app/globals.css`) + un petit hook ; **aucune bibliothèque
 - `lib/use-lieu-sol.ts` : lieu actif = position (GPS ou point placé sur la carte), sinon ville choisie (sinon la ville du compte), puis `getEtatSol(lat, lon)` → `GET /api/etat-sol`.
 - `components/sol/BandeauPosition.tsx` : lieu (« Près de Libreville (3 km) »), date des données NASA, échelle (maille d'environ 50 km). Si le GPS est refusé ou impossible, le panneau « Changer de lieu » s'ouvre : toucher la carte (`CartePointeur.tsx`) ou choisir une des 8 villes.
 - ⚠️ **L'API Geolocation exige HTTPS** (ou `localhost`). Pour tester sur un téléphone, utiliser l'URL déployée en HTTPS ou un tunnel HTTPS, pas `http://192.168.x.x` : le navigateur refuserait la localisation.
+
+## Accueil selon le profil (« Mon sol, ici et maintenant »)
+
+- `components/vues/VueAccueil.tsx` n'est plus qu'un **aiguillage** selon `useProfil()` (`lib/profil.ts`) :
+  - `accueil/AccueilProducteur.tsx` : lieu (`BandeauPosition`), **décision** (`sol/CarteAction.tsx` : titre d'après `codeAction`, phrase `action` du serveur), **coupe du sol** (`sol/CoupeSol.tsx`, SVG sans dépendance, « Rejouer le mois »), 3 indicateurs, évolution 30 jours repliée (`sol/EvolutionSol.tsx`, petits multiples recharts), bandeau Telegram refermable ;
+  - `accueil/AccueilConseiller.tsx` : zones triées par urgence (`alerte` calculée par le serveur), points ajoutés gardés sur l'appareil (`sstack:zones`), détail d'une zone avec les composants du producteur ;
+  - `accueil/AccueilOrganisation.tsx` : synthèse par verdict, carte des sites, tableau triable, export CSV (`;`, virgule décimale, UTF-8 avec BOM).
+- Routes : `GET /api/etat-sol?lat&lon` (état complet), `GET /api/etat-sol/sites` (résumé des 8 sites), `GET /api/etat-sol/resume?lat&lon&nom` (résumé d'un point).
+- Profils : `producteur` (défaut), `conseiller`, `organisation`. Choix à l'inscription (`auth/ChoixProfil.tsx`), changement dans Paramètres > Mon profil (`PATCH /api/auth/moi`). Menu filtré par `menuPour(profil)` dans `navigation/menu.ts` (le producteur ne voit aucune page « à venir »). En mode local sans compte : sélecteur « Profil (démo) » sur l'accueil.
+- Couleurs de l'humidité : `couleurHumidite()` dans `lib/etat-sol.ts` (Terre Latérite → Pierre de Mbigou → Bleu Océan, interpolé en OKLab). Gouttes d'eau en plus de la couleur.
+- `sols/GraphiqueHumidite.tsx` (page /soil, travail d'un coéquipier) est laissé tel quel : il montre 60 jours de la seule zone des racines.

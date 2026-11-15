@@ -16,6 +16,7 @@ import type {
   FicheComplete,
   ReponseAgent,
   ReponseAuth,
+  ResumeEtatSol,
   Site,
   Utilisateur,
 } from './types'
@@ -133,6 +134,13 @@ export const majCompte = (maj: DemandeMajCompte) =>
 /** État du sol à une position (3 couches, température de surface, verdict, phrase d'action). */
 export const getEtatSol = (lat: number, lon: number) =>
   appeler<EtatSol>(`/api/etat-sol?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`)
+
+/** Résumé de l'état du sol des 8 sites (accueils conseiller et organisation). */
+export const getResumesSites = () => appeler<ResumeEtatSol[]>('/api/etat-sol/sites')
+
+/** Résumé de l'état du sol d'un point placé par le conseiller. */
+export const getResumePoint = (lat: number, lon: number, nom: string) =>
+  appeler<ResumeEtatSol>(`/api/etat-sol/resume?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&nom=${encodeURIComponent(nom)}`)
 
 export const getHumiditeSol = (siteId: string) => appeler<HumiditeSol>(`/api/sols/humidite/${encodeURIComponent(siteId)}`)
 

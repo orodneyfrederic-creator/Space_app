@@ -1,9 +1,15 @@
 // État du sol à une position : 3 couches d'humidité (surface, racines, profondeur), température de surface,
 // pluie, verdict et UNE phrase d'action. Tout est calculé ici par des règles ; le LLM ne fait qu'expliquer.
-import type { CoucheSol, EtatSol, PointEtatSol } from '../types/api.js'
+import type { CoucheSol, EtatSol, PointEtatSol, ResumeEtatSol, Site } from '../types/api.js'
 import {
-  actionRecommandee,
+  codeAction,
   codeMois,
+  ecartNormale,
+  ecartNormaleIndice,
+  niveauAlerte,
+  normalePeriode,
+  SEUIL_TENDANCE_PLUIE,
+  TEXTES_ACTION,
   debutSaisonCourante,
   demarrageSaison,
   derniers,
@@ -40,10 +46,12 @@ export function construireEtatSol(lat: number, lon: number, jours: Jour[], clima
       couches: [vide('surface'), vide('racines'), vide('profondeur')],
       tempSurface: { actuelle: null, moyenne7j: null, normale: null, tendance7j: null },
       pluie7: null,
+      ecartPluie7: null,
       pluie30: null,
       verdict: null,
       raison: 'Données NASA indisponibles',
-      action: actionRecommandee({ verdict: null, saisonDemarree: false, surface: 'inconnu', racines: 'inconnu', tendanceRacines: null, pluie7: null }),
+      codeAction: 'indisponible',
+      action: TEXTES_ACTION.indisponible,
       serie: [],
     }
   }
@@ -69,6 +77,14 @@ export function construireEtatSol(lat: number, lon: number, jours: Jour[], clima
   const demarrage = demarrageSaison(publies, debutSaisonCourante(aujourdhui))
   const evaluation = evaluerFenetre(demarrage, couches[1].etat, joursSecs(publies, 14), plusLongueSecheresse(derniers(publies, 14)))
   const pluie7 = pluieCumulee(publies, 7)
+  const code = codeAction({
+    verdict: evaluation.verdict,
+    saisonDemarree: demarrage.statut === 'demarree',
+    surface: couches[0].etat,
+    racines: couches[1].etat,
+    tendanceRacines: couches[1].tendance7j,
+    pluie7,
+  })
 
   const serie: PointEtatSol[] = publies.slice(-JOURS_SERIE).map((j) => ({
     date: j.date,
@@ -90,17 +106,12 @@ export function construireEtatSol(lat: number, lon: number, jours: Jour[], clima
       tendance7j: tendance(publies.map((j) => j.tempSurface), SEUIL_TENDANCE_TEMP),
     },
     pluie7,
+    ecartPluie7: ecartNormale(pluie7, normalePeriode(publies, 7, climato)),
     pluie30: pluieCumulee(publies, 30),
     verdict: evaluation.verdict,
     raison: evaluation.raison,
-    action: actionRecommandee({
-      verdict: evaluation.verdict,
-      saisonDemarree: demarrage.statut === 'demarree',
-      surface: couches[0].etat,
-      racines: couches[1].etat,
-      tendanceRacines: couches[1].tendance7j,
-      pluie7,
-    }),
+    codeAction: code,
+    action: TEXTES_ACTION[code],
     serie,
   }
 }
@@ -116,4 +127,80 @@ export async function etatSolPosition(lat: number, lon: number, aujourdhui = new
   const debut = debutSaison < ilYa60Jours ? debutSaison : ilYa60Jours
   const [jours, climato] = await Promise.all([getQuotidien(lat, lon, debut, aujourdhui), getClimatologie(lat, lon)])
   return construireEtatSol(lat, lon, jours, climato, aujourdhui)
+}
+
+/** Résumé d'un site à partir de son état du sol (fonction pure). */
+export function resumer(site: Site, e: EtatSol): ResumeEtatSol {
+  const racines: CoucheSol = e.couches[1] ?? { nom: 'racines', indice: null, normale: null, etat: 'inconnu', tendance7j: null }
+  const tendancePluie = tendance(e.serie.map((p) => p.pluie), SEUIL_TENDANCE_PLUIE)
+  return {
+    site,
+    dernierJour: e.dernierJour,
+    verdict: e.verdict,
+    codeAction: e.codeAction,
+    action: e.action,
+    racines,
+    ecartRacines: ecartNormaleIndice(racines.indice, racines.normale),
+    tempSurface: e.tempSurface.actuelle,
+    pluie7: e.pluie7,
+    pluie30: e.pluie30,
+    alerte: niveauAlerte(racines.etat, racines.tendance7j, tendancePluie),
+  }
+}
+
+/** Résumé d'un site ; si la NASA ne répond pas pour ce site, un résumé « indisponible » (les autres sites répondent). */
+export async function resumeSite(site: Site): Promise<ResumeEtatSol> {
+  try {
+    return resumer(site, await etatSolPosition(site.lat, site.lon))
+  } catch (erreur) {
+    console.error(`[etat-sol] résumé indisponible pour ${site.nom} :`, erreur)
+    return {
+      site,
+      dernierJour: null,
+      verdict: null,
+      codeAction: 'indisponible',
+      action: TEXTES_ACTION.indisponible,
+      racines: { nom: 'racines', indice: null, normale: null, etat: 'inconnu', tendance7j: null },
+      ecartRacines: null,
+      tempSurface: null,
+      pluie7: null,
+      pluie30: null,
+      alerte: 'vigilance',
+    }
+  }
+}
+
+// ── Textes (Telegram, contexte de l'agent) : les chiffres viennent de l'état calculé, rien n'est recalculé ──
+
+const pct = (v: number | null) => (v === null ? 'non publiée' : `${Math.round(v * 100)} %`)
+const nb = (v: number | null, unite: string) => (v === null ? 'non publiée' : `${(Math.round(v * 10) / 10).toString().replace('.', ',')} ${unite}`)
+const jourMois = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
+const FLECHE = { hausse: '↑', baisse: '↓', stable: '→' } as const
+const NOM_COUCHE = { surface: 'Surface', racines: 'Racines', profondeur: 'Profondeur' } as const
+
+/** Réponse courte du bot Telegram à une position partagée. */
+export function texteEtatSolTelegram(e: EtatSol): string {
+  if (e.dernierJour === null) return `${e.action}`
+  const pres = e.lieuProche ? (e.lieuProche.distanceKm < 1 ? `à ${e.lieuProche.site.nom.split(' (')[0]}` : `près de ${e.lieuProche.site.nom.split(' (')[0]} (${e.lieuProche.distanceKm} km)`) : 'votre position'
+  const couches = e.couches.map((c) => `• ${NOM_COUCHE[c.nom]} : ${pct(c.indice)}${c.etat === 'inconnu' ? '' : ` (${c.etat}${c.tendance7j ? ` ${FLECHE[c.tendance7j]}` : ''})`}`)
+  return [
+    `📍 Position enregistrée, ${pres}.`,
+    '',
+    `État du sol (NASA, données du ${jourMois(e.dernierJour)}, zone d'environ 50 km) :`,
+    ...couches,
+    `🌡️ Surface du sol : ${nb(e.tempSurface.actuelle, '°C')} · 🌧️ Pluie 7 jours : ${nb(e.pluie7, 'mm')}`,
+    '',
+    `👉 ${e.action}`,
+  ].join('\n')
+}
+
+/** Ligne factuelle pour la fiche parcelle (contexte du LLM) : 3 couches, température de surface, action par règles. */
+export function ligneContexteEtatSol(e: EtatSol): string {
+  if (e.dernierJour === null) return 'Humidité du sol par couche : données NASA non publiées'
+  const couches = e.couches.map((c) => `${c.nom} ${pct(c.indice)} (${c.etat}${c.tendance7j ? `, ${c.tendance7j}` : ''})`).join(', ')
+  return (
+    `Humidité du sol par couche au ${jourMois(e.dernierJour)} (indice NASA en %, 0 = sec, 100 = saturé ; tendance sur 7 jours) : ${couches}. ` +
+    `Température de surface du sol (TS, pas en profondeur) : ${nb(e.tempSurface.actuelle, '°C')}. ` +
+    `Action recommandée par les règles S'STACK (à expliquer, ne pas changer) : ${e.action}`
+  )
 }

@@ -16,32 +16,42 @@ type Etape = { cible?: string; cote?: Cote; titre: string; texte: string }
 const ETAPES: readonly Etape[] = [
   {
     titre: 'Bienvenue sur S’STACK',
-    texte: 'Cette page vous dit si c’est le bon moment pour semer. On vous montre comment la lire. Cela prend une minute.',
+    texte: 'Cette page vous dit dans quel état est votre sol et ce que vous pouvez faire maintenant. On vous montre comment la lire. Cela prend une minute.',
   },
   {
-    cible: 'site',
-    titre: 'Choisissez votre ville',
-    texte: 'Prenez la ville la plus proche de vos champs. Tous les chiffres de la page changent avec elle.',
+    cible: 'position',
+    titre: 'Où est votre champ ?',
+    texte: 'Touchez « Me localiser » pour utiliser le GPS de votre téléphone, ou « Changer de lieu » pour toucher la carte ou choisir une ville. Les données NASA couvrent une zone d’environ 50 km.',
   },
   {
-    cible: 'verdict',
-    titre: 'La réponse est ici',
-    texte: 'Vert : c’est un bon moment pour semer. Jaune : c’est risqué. Brun : mieux vaut attendre. En dessous, on vous dit pourquoi.',
+    cible: 'action',
+    titre: 'Que faire maintenant',
+    texte: 'Le grand titre vous dit quoi faire cette semaine. Vert : allez-y. Jaune : attention. Brun : mieux vaut attendre. La phrase en dessous explique pourquoi.',
   },
   {
-    cible: 'conditions',
-    titre: 'Les chiffres de la pluie',
-    texte: 'Ils viennent des satellites de la NASA. Touchez le petit « i » à côté d’un mot pour savoir ce qu’il veut dire.',
+    cible: 'coupe',
+    titre: 'Votre sol, couche par couche',
+    texte: 'Plus il y a de gouttes et de bleu, plus la terre est mouillée. Le haut est la surface, le milieu la zone des racines, le bas la profondeur. « Rejouer le mois » montre les 30 derniers jours.',
   },
   {
-    cible: 'sites',
-    titre: 'Les autres villes',
-    texte: 'Vous voyez l’avis de chaque ville. Touchez une ville pour la choisir.',
+    cible: 'indicateurs',
+    titre: 'Les 3 chiffres clés',
+    texte: 'L’eau au niveau des racines, la chaleur de la terre et la pluie des 7 derniers jours. Touchez le petit « i » pour savoir ce que chaque mot veut dire.',
+  },
+  {
+    cible: 'zones',
+    titre: 'Vos zones, les plus urgentes d’abord',
+    texte: 'Les zones en alerte sont en haut. Touchez une zone pour voir son sol en détail. Vous pouvez ajouter vos propres points sur la carte.',
+  },
+  {
+    cible: 'synthese',
+    titre: 'La tendance sur tous les sites',
+    texte: 'Combien de sites sont favorables, risqués ou défavorables. Plus bas : la carte et un tableau à trier ou à exporter pour Excel.',
   },
   {
     cible: 'telegram',
     titre: 'Aussi sur Telegram',
-    texte: 'Vous avez Telegram ? Posez vos questions au bot @sstack_agri_bot, par écrit ou par message vocal. Suivez les 3 étapes de cette carte.',
+    texte: 'Vous avez Telegram ? Posez vos questions au bot @sstack_agri_bot, par écrit ou par message vocal.',
   },
   {
     cible: 'agent',
@@ -53,7 +63,7 @@ const ETAPES: readonly Etape[] = [
     cible: 'menu',
     cote: 'droite',
     titre: 'Toutes les pages',
-    texte: 'Le menu vous mène aux autres pages : la carte, la pluie, vos cultures.',
+    texte: 'Le menu vous mène aux autres pages : votre sol, vos cultures, vos conseils.',
   },
   {
     titre: 'C’est tout !',
@@ -90,10 +100,11 @@ function Visite({ chemin }: { chemin: string | null }) {
     window.addEventListener(EVENEMENT_LANCER_VISITE, demarrer)
     let attente: number | undefined
     if (!visiteDejaVue() || visiteDemandee()) {
-      // On attend que le verdict NASA soit affiché (6 s au plus) pour éclairer les vrais éléments
+      // On attend que les données NASA soient affichées (6 s au plus) pour éclairer les vrais éléments
+      // (carte d'action du producteur, zones du conseiller ou synthèse de l'organisation)
       const debut = Date.now()
       attente = window.setInterval(() => {
-        if (trouverCible('verdict') || Date.now() - debut > 6000) {
+        if (trouverCible('action') || trouverCible('zones') || trouverCible('synthese') || Date.now() - debut > 6000) {
           window.clearInterval(attente)
           demarrer()
         }
