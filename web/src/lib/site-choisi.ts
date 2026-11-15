@@ -1,6 +1,8 @@
 'use client'
-// Le site choisi par l'utilisateur, mémorisé dans le navigateur (Tchibanga par défaut).
+// Le site choisi par l'utilisateur, mémorisé dans le navigateur.
+// Sans choix mémorisé : la ville du compte (siteId), sinon Tchibanga.
 import { useCallback, useSyncExternalStore } from 'react'
+import { EVENEMENT_SESSION, utilisateurConnecte } from './session'
 
 const CLE = 'sstack:site'
 export const SITE_PAR_DEFAUT = 'tchibanga'
@@ -8,7 +10,7 @@ const EVENEMENT = 'sstack:site-change'
 
 function lire(): string {
   try {
-    return window.localStorage.getItem(CLE) ?? SITE_PAR_DEFAUT
+    return window.localStorage.getItem(CLE) ?? utilisateurConnecte()?.siteId ?? SITE_PAR_DEFAUT
   } catch {
     return SITE_PAR_DEFAUT // navigation privée ou stockage bloqué
   }
@@ -17,7 +19,9 @@ function lire(): string {
 function abonner(rappel: () => void): () => void {
   window.addEventListener(EVENEMENT, rappel)
   window.addEventListener('storage', rappel)
+  window.addEventListener(EVENEMENT_SESSION, rappel)
   return () => {
+    window.removeEventListener(EVENEMENT_SESSION, rappel)
     window.removeEventListener(EVENEMENT, rappel)
     window.removeEventListener('storage', rappel)
   }

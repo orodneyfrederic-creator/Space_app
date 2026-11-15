@@ -144,3 +144,10 @@ Tout est en CSS (`src/app/globals.css`) + un petit hook ; **aucune bibliothèque
 - le titre et la photo du hero ne sont **jamais** cachés au chargement ;
 - `prefers-reduced-motion: reduce` : apparitions visibles tout de suite, pas de zoom ni de déplacement, compteurs affichés directement ;
 - effets de survol seulement sur les appareils avec souris (`@media (hover: hover)`), toujours doublés d'un `focus-visible`.
+
+## Position du champ et état du sol
+
+- `lib/use-position.ts` : GPS du téléphone (API Geolocation), demandé **seulement après un clic** sur « Me localiser ». États : `inactif`, `recherche`, `trouve`, `refuse`, `indisponible`, `delai`. La dernière position reste sur l'appareil (`localStorage`, clé `sstack:position`) et n'est **jamais** envoyée à Supabase.
+- `lib/use-lieu-sol.ts` : lieu actif = position (GPS ou point placé sur la carte), sinon ville choisie (sinon la ville du compte), puis `getEtatSol(lat, lon)` → `GET /api/etat-sol`.
+- `components/sol/BandeauPosition.tsx` : lieu (« Près de Libreville (3 km) »), date des données NASA, échelle (maille d'environ 50 km). Si le GPS est refusé ou impossible, le panneau « Changer de lieu » s'ouvre : toucher la carte (`CartePointeur.tsx`) ou choisir une des 8 villes.
+- ⚠️ **L'API Geolocation exige HTTPS** (ou `localhost`). Pour tester sur un téléphone, utiliser l'URL déployée en HTTPS ou un tunnel HTTPS, pas `http://192.168.x.x` : le navigateur refuserait la localisation.

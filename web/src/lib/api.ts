@@ -11,6 +11,7 @@ import type {
   DemandeConnexion,
   DemandeConseil,
   DemandeInscription,
+  EtatSol,
   FicheComplete,
   ReponseAgent,
   ReponseAuth,
@@ -124,6 +125,10 @@ export const deconnecter = () => effacerSession()
 // ── Intelligence des sols (/soil) ──
 
 /** Humidité du sol des 60 derniers jours (NASA POWER), accès libre. */
+/** État du sol à une position (3 couches, température de surface, verdict, phrase d'action). */
+export const getEtatSol = (lat: number, lon: number) =>
+  appeler<EtatSol>(`/api/etat-sol?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`)
+
 export const getHumiditeSol = (siteId: string) => appeler<HumiditeSol>(`/api/sols/humidite/${encodeURIComponent(siteId)}`)
 
 const filtreSite = (siteId?: string) => (siteId ? `?siteId=${encodeURIComponent(siteId)}` : '')

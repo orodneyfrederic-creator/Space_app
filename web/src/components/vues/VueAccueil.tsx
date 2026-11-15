@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getApercu, getFiche } from '@/lib/api'
 import { dateFr, ecartFr, LIBELLE_SOL, lireFiche, nombreFr } from '@/lib/fiche'
 import { useSiteChoisi } from '@/lib/site-choisi'
+import { useLieuSol } from '@/lib/use-lieu-sol'
 import { useApi } from '@/lib/use-api'
 import { styleVerdict } from '@/lib/verdict'
 import BoutonVisite from '../aide/BoutonVisite'
@@ -12,6 +13,7 @@ import { Infobulle } from '../aide/Infobulle'
 import CarteParcelles from '../carte/CarteParcelles'
 import { SunIcon } from '../icons'
 import SelecteurSite from '../SelecteurSite'
+import BandeauPosition from '../sol/BandeauPosition'
 import CarteTelegram from '../telegram/CarteTelegram'
 import { BadgeVerdict, Chargement, EnTetePage, Erreur, EtiquetteNasa, Panneau, Tuile } from '../ui/elements'
 
@@ -19,6 +21,7 @@ export default function VueAccueil() {
   const [siteId, choisir] = useSiteChoisi()
   const fiche = useApi(() => getFiche(siteId), `fiche:${siteId}`)
   const apercu = useApi(getApercu, 'apercu')
+  const lieuSol = useLieuSol()
 
   const lue = fiche.statut === 'pret' ? lireFiche(fiche.donnees.fiche.donnees) : null
   const nomSite = fiche.statut === 'pret' ? fiche.donnees.site.nom : apercu.statut === 'pret' ? apercu.donnees.find((a) => a.site.id === siteId)?.site.nom : undefined
@@ -35,6 +38,18 @@ export default function VueAccueil() {
           </>
         }
       />
+
+      <div className="mb-5">
+        <BandeauPosition
+          lieu={lieuSol.lieu}
+          etatSol={lieuSol.etatSol.statut === 'pret' ? lieuSol.etatSol.donnees : null}
+          localisation={lieuSol.localisation}
+          sites={lieuSol.sites}
+          localiser={lieuSol.localiser}
+          placer={lieuSol.placer}
+          choisirVille={lieuSol.choisirVille}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-6">
         {/* Colonne gauche : conditions + évaluation */}
