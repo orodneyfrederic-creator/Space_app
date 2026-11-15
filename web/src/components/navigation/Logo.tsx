@@ -1,18 +1,20 @@
 // Logo S'STACK simplifié : insigne aux trois couleurs de la charte + nom.
-export default function Logo({ clair = false }: { clair?: boolean }) {
+// Disque en CSS (pas de clipPath SVG à identifiant fixe : plusieurs logos sur la page, dont un masqué,
+// faisaient perdre l'arrondi aux suivants).
+export default function Logo({ clair = false, sousTitre }: { clair?: boolean; sousTitre?: string }) {
   return (
     <span className="flex items-center gap-2.5">
-      <svg aria-hidden="true" width="30" height="30" viewBox="0 0 30 30" className="shrink-0">
-        <clipPath id="logo-disque">
-          <circle cx="15" cy="15" r="14" />
-        </clipPath>
-        <g clipPath="url(#logo-disque)">
-          <rect width="30" height="10" fill="#009E60" />
-          <rect y="10" width="30" height="10" fill="#FCD116" />
-          <rect y="20" width="30" height="10" fill="#3A75C4" />
-        </g>
-      </svg>
-      <span className={`font-display text-xl font-bold tracking-[-0.3px] ${clair ? 'text-white' : 'text-ink'}`}>S&apos;STACK</span>
+      <span aria-hidden="true" className="flex size-7 shrink-0 flex-col overflow-hidden rounded-full">
+        <span className="flex-1 bg-[#009E60]" />
+        <span className="flex-1 bg-[#FCD116]" />
+        <span className="flex-1 bg-[#3A75C4]" />
+      </span>
+      <span className="flex flex-col">
+        <span className={`font-display text-xl leading-tight font-bold tracking-[-0.3px] ${clair ? 'text-white' : 'text-ink'}`}>S&apos;STACK</span>
+        {sousTitre && (
+          <span className={`text-[9px] leading-none font-medium tracking-[0.12em] uppercase ${clair ? 'text-white/75' : 'text-muted'}`}>{sousTitre}</span>
+        )}
+      </span>
     </span>
   )
 }

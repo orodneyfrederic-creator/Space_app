@@ -21,6 +21,7 @@ npm run dev                     # → http://localhost:3000
 
 ## Mise en page responsive
 
+- **Landing (`/`)** : pleine largeur, sans barre latérale (`app/page.tsx`, composants dans `components/landing/`). Les pages de l'application sont dans le groupe `app/(app)/`, dont le layout ajoute la navigation.
 - **Téléphone (< 768 px)** : une colonne, barre d'onglets fixe en bas (`components/TabBar.tsx`).
 - **Tablette et ordinateur (≥ 768 px)** : barre latérale à gauche (`components/navigation/NavLaterale.tsx`), contenu jusqu'à 1200 px, grilles à 2 ou 3 colonnes.
 - Les deux barres partagent la même liste de liens : `components/navigation/liens.ts`.
@@ -30,14 +31,25 @@ npm run dev                     # → http://localhost:3000
 ```
 web/src/
   app/                        ← les pages, chacune affiche une « vue »
-    page.tsx                  /                     tableau de bord
-    carte/                    /carte                carte MapLibre des 8 sites
-    parcelles/[id]/           /parcelles/tchibanga  fiche d'un site (rendue dynamiquement)
-    donnees/                  /donnees              chiffres NASA du site choisi
-    cultures/                 /cultures             repères et questions par culture
-    discuter/                 /discuter             parler à l'agent (texte + micro)
-    historique/               /historique           conseils donnés (web + Telegram)
+    page.tsx                  /                     landing (présentation, pleine largeur, en-tête fixe)
+    connexion/                /connexion            connexion (auth pas encore branchée : ouvre /tableau-de-bord)
+    inscription/              /inscription          inscription (garde le site choisi, puis ouvre /tableau-de-bord)
+    (app)/layout.tsx          ← barre latérale + barre d'onglets des pages ci-dessous
+    (app)/tableau-de-bord/    /tableau-de-bord      tableau de bord
+    (app)/carte/              /carte                carte MapLibre des 8 sites
+    (app)/parcelles/[id]/     /parcelles/tchibanga  fiche d'un site (rendue dynamiquement)
+    (app)/donnees/            /donnees              chiffres NASA du site choisi
+    (app)/cultures/           /cultures             repères et questions par culture
+    (app)/discuter/           /discuter             parler à l'agent (texte + micro)
+    (app)/historique/         /historique           conseils donnés (web + Telegram)
   components/
+    agent/                    ← Mbolo, l'agent flottant de toutes les pages (sur le modèle de Linky, CNX LINK) :
+                                questions rapides par page (questions.ts), sinon POST /api/conseil avec le site choisi ;
+                                ouvrirAgent(question) l'ouvre depuis n'importe quel bouton
+    auth/                     ← cadre et formulaires de connexion / inscription
+    navigation/menu.ts        ← menu « Farm Intelligence » (sidebar + tiroir mobile) ; les entrées « aVenir »
+                                sont servies par app/(app)/[rubrique]/[page] (page d'attente)
+    landing/                  ← en-tête fixe, hero, sections, carrousel ; photos Unsplash dans public/landing/ (crédits : photos.ts)
     vues/                     ← une vue par page (chargement, erreur, mise en page)
     carte/  climat/  discussion/  historique/  navigation/  ui/
   lib/
@@ -47,6 +59,7 @@ web/src/
     fiche.ts                  ← lecture sûre des chiffres de la fiche + mise en forme française
     site-choisi.ts            ← site choisi, mémorisé dans le navigateur (Tchibanga par défaut)
     verdict.ts                ← couleurs des verdicts (charte S'STACK)
+    cultures.ts               ← repères et questions par culture (page /cultures et landing)
 ```
 
 Règles :
