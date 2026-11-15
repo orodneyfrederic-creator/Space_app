@@ -1,6 +1,7 @@
 // Landing de S'STACK, en pleine largeur (sans la barre latérale de l'application).
 // Le tableau de bord est sur /tableau-de-bord ; connexion et inscription sur /connexion et /inscription.
 import type { Metadata } from 'next'
+import Apparitions from '@/components/landing/Apparitions'
 import EnTeteLanding from '@/components/landing/EnTeteLanding'
 import Hero from '@/components/landing/Hero'
 import Sections from '@/components/landing/Sections'
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
 
 export default function Landing() {
   return (
-    <div className="bg-white">
+    <div className="landing bg-white">
+      <Apparitions />
       <EnTeteLanding />
       <Hero />
       <Sections />

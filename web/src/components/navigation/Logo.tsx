@@ -1,8 +1,9 @@
 // Logo officiel S'STACK (fichiers de public/brand/, voir lib/marque.ts).
-// - fond clair  → logo « principal » (symbole Vert Forêt + STACK Noir Ébène)
-// - fond sombre → logo « négatif » (symbole aux couleurs du drapeau + STACK blanc) : prop `clair`
+// Symbole : une feuille aux couleurs du drapeau gabonais (vert, jaune, bleu), la même sur toutes les versions.
+// - fond clair  → logo « principal » (feuille + STACK Noir Ébène)
+// - fond sombre → logo « négatif » (feuille + STACK blanc) : prop `clair`
 // - `variante` permet de forcer une version (tricolore, icône seule…).
-// Le symbole se lit « S' » : le logo se lit donc S'STACK (texte alternatif identique).
+// Texte alternatif : « S'STACK », le nom du projet.
 import Image from 'next/image'
 import { LOGOS, MARQUE, type VarianteLogo } from '@/lib/marque'
 

@@ -10,7 +10,7 @@ export function Fleches({ onPrecedent, onSuivant, etiquette }: { onPrecedent: ()
         type="button"
         onClick={onPrecedent}
         aria-label={`${etiquette} : précédent`}
-        className="flex size-12 cursor-pointer items-center justify-center rounded-[10px] border border-cnx bg-transparent text-cnx transition-colors hover:bg-pale"
+        className="bouton-contour flex size-12 cursor-pointer items-center justify-center rounded-full border border-cnx bg-transparent text-cnx hover:scale-105 hover:bg-cnx hover:text-white"
       >
         <IcoFlecheGauche />
       </button>
@@ -18,7 +18,7 @@ export function Fleches({ onPrecedent, onSuivant, etiquette }: { onPrecedent: ()
         type="button"
         onClick={onSuivant}
         aria-label={`${etiquette} : suivant`}
-        className="flex size-12 cursor-pointer items-center justify-center rounded-[10px] border border-vif bg-vif text-white transition-colors hover:bg-vif-hover"
+        className="bouton-contour flex size-12 cursor-pointer items-center justify-center rounded-full border border-vif bg-vif text-white hover:scale-105 hover:bg-vif-hover"
       >
         <IcoFleche />
       </button>

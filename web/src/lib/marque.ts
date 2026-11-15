@@ -30,8 +30,9 @@ export const LOGOS = {
   principal: { src: '/brand/logo-principal.png', largeur: 1264, hauteur: 314 }, // fond clair
   tricolore: { src: '/brand/logo-tricolore.png', largeur: 1264, hauteur: 314 }, // fond clair, version drapeau
   negatif: { src: '/brand/logo-negatif.png', largeur: 1264, hauteur: 314 }, // fond sombre
-  icone: { src: '/brand/icone.png', largeur: 728, hauteur: 728 }, // symbole seul, Vert Forêt
-  iconeTricolore: { src: '/brand/icone-tricolore.png', largeur: 728, hauteur: 728 }, // symbole seul, drapeau
+  icone: { src: '/brand/icone.png', largeur: 728, hauteur: 728 }, // symbole seul : la feuille aux couleurs du Gabon
+  iconeTricolore: { src: '/brand/icone-tricolore.png', largeur: 728, hauteur: 728 }, // symbole seul : la feuille (même image)
+  feuille: { src: '/brand/feuille-gabon.png', largeur: 728, hauteur: 728 }, // la feuille seule, fond transparent
 } as const
 
 export type VarianteLogo = keyof typeof LOGOS

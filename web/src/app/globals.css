@@ -95,6 +95,44 @@
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
+/* Mouvement et élévation : jetons communs (landing d'abord). Ombres teintées de Vert Forêt. */
+:root {
+  --ease-sortie: cubic-bezier(0.16, 1, 0.3, 1); /* exponentielle : part tout de suite, se pose très doucement */
+  --ease-standard: cubic-bezier(0.45, 0, 0.2, 1); /* entrée et sortie adoucies : couleurs, fonds */
+  --duree-rapide: 240ms; /* changements de couleur au survol */
+  --duree: 450ms; /* survols avec déplacement, pastille de navigation */
+  --duree-lente: 800ms; /* en-tête qui se transforme */
+  --duree-apparition: 1100ms; /* apparitions au défilement */
+  --ecart-apparition: 24px; /* distance parcourue par un élément qui apparaît */
+
+  --ombre-1: 0 1px 2px rgb(11 93 59 / 0.06), 0 1px 3px rgb(17 26 20 / 0.08);
+  --ombre-2: 0 4px 12px -2px rgb(11 93 59 / 0.1), 0 2px 6px -2px rgb(17 26 20 / 0.08);
+  --ombre-3: 0 18px 40px -12px rgb(11 93 59 / 0.22), 0 8px 16px -8px rgb(17 26 20 / 0.12);
+}
+
+/* Verre dépoli clair (en-tête défilé, menu mobile). Repli opaque sans backdrop-filter. */
+.verre {
+  background-color: rgb(255 255 255 / 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .verre {
+    background-color: rgb(255 255 255 / 0.94);
+  }
+}
+
+/* Menu mobile de la landing : fondu + léger glissement vers le bas à l'ouverture */
+details[open] > .menu-deroulant {
+  animation: menu-deroulant 380ms var(--ease-sortie);
+}
+@keyframes menu-deroulant {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
 /* Pleine fenêtre sur tous les écrans : plus de cadre de téléphone */
 html {
   background: var(--color-paper);
@@ -184,4 +222,222 @@ body {
     var(--ss-jaune-soleil) 33.34% 66.67%,
     var(--ss-bleu-ocean) 66.67% 100%
   );
+}
+
+/* ═══════════════ Landing : survols, apparitions, profondeur (voir FRONTEND.md « Mouvements et survols ») ═══════════════ */
+
+/* Sélection de texte aux couleurs de la marque */
+::selection {
+  background: rgb(11 93 59 / 0.15);
+  color: var(--color-ink);
+}
+
+/* Focus clavier de la landing : Vert Forêt sur fond clair, Jaune Soleil sur fond sombre */
+.landing :focus-visible {
+  outline: 2px solid var(--color-cnx);
+  outline-offset: 2px;
+}
+.landing .fond-sombre :focus-visible {
+  outline-color: var(--color-sun);
+}
+
+/* Sections sombres : dégradé Vert Forêt → Vert Forêt profond, halo Vert Gabon très discret */
+.fond-foret {
+  background:
+    radial-gradient(ellipse at 88% 12%, rgb(0 158 96 / 0.12), transparent 50%),
+    linear-gradient(160deg, var(--color-profond), var(--color-vif-hover));
+}
+
+/* Carte : bordure Noir Ébène 6 % + ombre de la charte */
+.carte {
+  border: 1px solid rgb(17 26 20 / 0.06);
+  box-shadow: var(--ombre-1);
+}
+
+/* Bouton plein : monte de 1 px au survol, se compresse au clic */
+.bouton-plein {
+  box-shadow: var(--ombre-1);
+  transition:
+    transform var(--duree) var(--ease-sortie),
+    box-shadow var(--duree) var(--ease-sortie),
+    background-color var(--duree-rapide) var(--ease-standard);
+}
+.bouton-plein:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Bouton contour : fond et bordure en fondu (les couleurs viennent des classes Tailwind hover:) */
+.bouton-contour {
+  transition:
+    background-color var(--duree-rapide) var(--ease-standard),
+    border-color var(--duree-rapide) var(--ease-standard),
+    color var(--duree-rapide) var(--ease-standard),
+    transform var(--duree) var(--ease-sortie),
+    scale var(--duree) var(--ease-sortie);
+}
+/* Bouton de l'en-tête : ses couleurs changent au même rythme que la barre de verre */
+.bouton-contour.bouton-entete {
+  transition-duration: var(--duree-lente);
+  transition-timing-function: var(--ease-sortie);
+}
+.bouton-contour:active {
+  transform: scale(0.98);
+}
+
+/* Carte cliquable : monte de 4 px, ombre plus profonde, bordure Vert Forêt 20 % */
+.carte-interactive {
+  transition:
+    transform var(--duree) var(--ease-sortie),
+    box-shadow var(--duree) var(--ease-sortie),
+    border-color var(--duree) var(--ease-sortie);
+}
+.photo-zoom {
+  transition: transform 1200ms var(--ease-sortie);
+}
+
+/* Flèches dans les boutons et liens (dans un parent .group) */
+.fleche-glisse,
+.fleche-diagonale,
+.pastille-icone,
+.rotation-fleche {
+  transition: transform var(--duree) var(--ease-sortie);
+}
+
+/* Lien texte : soulignement qui se dessine de gauche à droite */
+.lien-souligne {
+  position: relative;
+  text-decoration: none;
+}
+.lien-souligne::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duree) var(--ease-sortie);
+}
+.lien-souligne:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Les effets de survol ne concernent que les appareils avec souris ; le clavier a les mêmes via focus-visible */
+@media (hover: hover) {
+  .bouton-plein:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--ombre-2);
+  }
+  .carte-interactive:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ombre-3);
+    border-color: rgb(11 93 59 / 0.2);
+  }
+  .carte-interactive:hover .photo-zoom,
+  .group:hover .photo-zoom {
+    transform: scale(1.05);
+  }
+  .group:hover .fleche-glisse {
+    transform: translateX(3px);
+  }
+  .group:hover .fleche-diagonale {
+    transform: translate(2px, -2px);
+  }
+  .group:hover .pastille-icone {
+    transform: rotate(-6deg);
+  }
+  .group:hover .rotation-fleche {
+    transform: rotate(45deg);
+  }
+  .lien-souligne:hover::after {
+    transform: scaleX(1);
+  }
+}
+.bouton-plein:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--ombre-2);
+}
+.carte-interactive:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--ombre-3);
+  border-color: rgb(11 93 59 / 0.2);
+}
+.group:focus-visible .fleche-glisse {
+  transform: translateX(3px);
+}
+.group:focus-visible .fleche-diagonale {
+  transform: translate(2px, -2px);
+}
+
+/* Apparitions au défilement (hook useApparition). La classe js-anime est posée sur <html> par le hook :
+   sans JavaScript, ou avec « réduire les animations », tout reste visible. */
+[data-apparait] {
+  transition:
+    opacity var(--duree-apparition) var(--ease-sortie) var(--delai, 0ms),
+    transform var(--duree-apparition) var(--ease-sortie) var(--delai, 0ms),
+    filter var(--duree-apparition) var(--ease-sortie) var(--delai, 0ms),
+    background-color var(--duree) var(--ease-standard);
+}
+.js-anime [data-apparait]:not([data-visible]) {
+  opacity: 0;
+  transform: translateY(var(--ecart-apparition));
+  filter: blur(6px);
+}
+/* Petites photos de la phrase « À propos » : apparition en zoom */
+.photo-ligne {
+  transition:
+    opacity var(--duree-apparition) var(--ease-sortie) 250ms,
+    transform var(--duree-apparition) var(--ease-sortie) 250ms;
+}
+.js-anime [data-apparait]:not([data-visible]) .photo-ligne {
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+/* Hero : zoom très lent de la photo, cartes vitrées en cascade après le titre (le titre reste visible tout de suite) */
+.hero-zoom {
+  animation: hero-zoom 2.6s var(--ease-sortie) both;
+}
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.06);
+  }
+}
+.hero-cascade > * {
+  animation: hero-cascade var(--duree-apparition) var(--ease-sortie) both;
+  animation-delay: calc(350ms + var(--i, 0) * 120ms);
+}
+@keyframes hero-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ecart-apparition));
+    filter: blur(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js-anime [data-apparait]:not([data-visible]),
+  .js-anime [data-apparait]:not([data-visible]) .photo-ligne {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .hero-zoom,
+  .hero-cascade > * {
+    animation: none;
+  }
+  .bouton-plein:hover,
+  .bouton-plein:focus-visible,
+  .carte-interactive:hover,
+  .carte-interactive:focus-visible,
+  .group:hover .fleche-glisse,
+  .group:hover .fleche-diagonale,
+  .group:hover .pastille-icone,
+  .group:hover .rotation-fleche,
+  .carte-interactive:hover .photo-zoom,
+  .group:hover .photo-zoom {
+    transform: none;
+  }
 }

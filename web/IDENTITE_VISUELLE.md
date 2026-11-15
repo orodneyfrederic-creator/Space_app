@@ -20,13 +20,13 @@ Slogan : **Cultiver demain avec les données du ciel**.
 
 ## Le logo
 
-Le symbole se lit « S' » : le logo se lit donc **S'STACK** (texte alternatif identique).
+Le symbole est une **feuille aux couleurs du drapeau gabonais** (bandes vert, jaune, bleu de haut en bas, nervures blanches), à gauche des lettres « STACK ». La feuille seule est dans `public/brand/feuille-gabon.png` (fond transparent). Texte alternatif du logo : « S'STACK ».
 
 | Version | Quand l'utiliser | Dans le code |
 |---|---|---|
-| Principal (symbole Vert Forêt + STACK noir) | Fond clair (Pierre de Mbigou, blanc) | `<Logo />` |
-| Négatif (symbole aux couleurs du drapeau + STACK blanc) | Fond sombre (Vert Forêt, Noir Ébène, photo) | `<Logo clair />` |
-| Tricolore (symbole drapeau + STACK noir) | Fond clair, moments « fierté nationale » (pitch, affiche) | `<Logo variante="tricolore" />` |
+| Principal (feuille + STACK noir) | Fond clair (Pierre de Mbigou, blanc) | `<Logo />` |
+| Négatif (feuille + STACK blanc) | Fond sombre (Vert Forêt, Noir Ébène, photo) | `<Logo clair />` |
+| Tricolore (feuille + STACK noir, identique au principal) | Fond clair, moments « fierté nationale » (pitch, affiche) | `<Logo variante="tricolore" />` |
 | Icône seule | Petits espaces, avatar | `<Logo variante="icone" hauteur={32} />` ou `variante="iconeTricolore"` |
 
 Options : `hauteur` (30 px par défaut), `sousTitre`, `prioritaire` (pour le logo de l'en-tête, chargé en premier).

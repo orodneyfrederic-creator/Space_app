@@ -64,7 +64,7 @@ const SOLUTIONS: readonly Solution[] = [
 
 /** Bouton d'action d'une solution : lien vers une page, ou ouverture de l'agent flottant. */
 function Action({ lien, className }: { lien: Solution['lien']; className: string }) {
-  const style = `h-12 items-center rounded-[10px] bg-vif px-6 text-sm font-semibold text-white no-underline hover:bg-vif-hover ${className}`
+  const style = `bouton-plein h-12 items-center rounded-full bg-vif px-6 text-sm font-semibold text-white no-underline hover:bg-vif-hover ${className}`
   return 'agent' in lien ? (
     <BoutonAgent className={`border-0 font-sans ${style}`}>{lien.label}</BoutonAgent>
   ) : (
@@ -77,16 +77,16 @@ export default function Solutions() {
   const base = useId()
 
   return (
-    <ul className="m-0 flex list-none flex-col border-t border-[#D9E3DD] p-0">
+    <ul data-cascade className="m-0 flex list-none flex-col border-t border-ink/10 p-0">
       {SOLUTIONS.map((s, i) => {
         const estOuverte = i === ouverte
         const idPanneau = `${base}-panneau-${i}`
         return (
-          <li key={s.titre} className={`border-b border-[#D9E3DD] py-6 transition-colors sm:py-7 ${estOuverte ? 'bg-white' : 'bg-transparent'} ${GOUTTIERE}`}>
+          <li key={s.titre} className={`group border-b border-ink/10 py-6 transition-colors duration-(--duree) ease-(--ease-sortie) sm:py-7 ${estOuverte ? 'bg-white' : 'bg-transparent hover:bg-white/60'} ${GOUTTIERE}`}>
             <div className="flex items-center gap-4 sm:gap-6">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-[#D9E3DD] bg-white text-cnx">{s.icone}</span>
+              <span className="pastille-icone flex size-14 shrink-0 items-center justify-center rounded-2xl border border-ink/10 bg-white text-cnx">{s.icone}</span>
               <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:pl-6 lg:pl-16">
-                <h3 className={`m-0 font-display text-xl font-bold tracking-[-0.02em] sm:text-2xl ${estOuverte ? 'text-cnx' : 'text-encre'}`}>{s.titre}</h3>
+                <h3 className={`m-0 font-display text-xl font-bold tracking-[-0.02em] transition-colors duration-(--duree-rapide) sm:text-2xl ${estOuverte ? 'text-cnx' : 'text-encre group-hover:text-cnx'}`}>{s.titre}</h3>
                 <p className="m-0 text-sm text-ardoise">{s.resume}</p>
               </div>
               {estOuverte && <Action lien={s.lien} className="hidden shrink-0 md:flex" />}
@@ -96,9 +96,9 @@ export default function Solutions() {
                 aria-expanded={estOuverte}
                 aria-controls={idPanneau}
                 aria-label={`${estOuverte ? 'Replier' : 'Déplier'} : ${s.titre}`}
-                className="flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[#D9E3DD] bg-transparent text-encre hover:border-cnx hover:text-cnx"
+                className="bouton-contour flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-ink/10 bg-transparent text-encre hover:border-cnx hover:text-cnx"
               >
-                {estOuverte ? <IcoDiagonaleBas /> : <IcoDiagonale />}
+                {estOuverte ? <IcoDiagonaleBas /> : <span className="rotation-fleche flex"><IcoDiagonale /></span>}
               </button>
             </div>
             <div id={idPanneau} hidden={!estOuverte} className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-[260px_minmax(0,1fr)] lg:pl-[84px] xl:grid-cols-[340px_minmax(0,1fr)]">
