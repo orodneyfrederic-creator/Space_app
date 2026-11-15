@@ -1,6 +1,6 @@
-// Liens de navigation, partagés entre la barre d'onglets (mobile) et la barre latérale (ordinateur).
+// Raccourcis de la barre d'onglets (téléphone et tablette). Le menu complet est dans menu.ts (sidebar).
 import type { ComponentType } from 'react'
-import { ChartIcon, ChatIcon, HomeIcon, MapIcon, SproutIcon } from '../icons'
+import { ChatIcon, HomeIcon, MapIcon, SproutIcon } from '../icons'
 
 export type Lien = {
   href: string
@@ -11,9 +11,8 @@ export type Lien = {
 }
 
 export const LIENS: readonly Lien[] = [
-  { href: '/', label: 'Accueil', icone: HomeIcon, correspond: ['/'] },
+  { href: '/tableau-de-bord', label: 'Accueil', icone: HomeIcon, correspond: ['/tableau-de-bord'] },
   { href: '/carte', label: 'Carte', icone: MapIcon, correspond: ['/carte', '/parcelles'] },
-  { href: '/donnees', label: 'Données', icone: ChartIcon, correspond: ['/donnees'] },
   { href: '/cultures', label: 'Cultures', icone: SproutIcon, correspond: ['/cultures'] },
   { href: '/discuter', label: 'Agent', icone: ChatIcon, correspond: ['/discuter', '/assistant', '/historique'] },
 ]

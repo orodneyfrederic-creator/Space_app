@@ -45,6 +45,24 @@
   --color-risk: #8E3F1E;
   --color-risk-bg: #F5E0D5;
   --color-risk-bar: #B4532A;
+
+  /* Landing : palette inspirée du design system CNX 4.0 (aplats verts, angles droits) */
+  --color-profond: #024534;      /* fond du hero, bandeaux sombres */
+  --color-nuit: #012A20;         /* pied de page */
+  --color-cnx: #1D7852;          /* vert principal sur fond clair (texte, bordures) */
+  --color-vif: #18A061;          /* mots mis en avant, boutons */
+  --color-vif-hover: #077A44;
+  --color-menthe: #6BC5A3;       /* petits textes et icônes sur fond sombre */
+  --color-pale: #F1F6F3;         /* fond des sections claires */
+  --color-encre: #231F20;        /* titres sur fond clair */
+  --color-ardoise: #5B647B;      /* textes secondaires sur fond clair */
+
+  /* Hero de la landing (maquette d'origine : photo transparente, cartes vitrées) */
+  --color-sous-bois: #0E2416;    /* ombre de la photo */
+  --color-pousse: #6CC04A;       /* vert vif des titres, sur fond sombre uniquement */
+  --color-menthe-pale: #D4EDBE;  /* carrés d'icônes des cartes vitrées */
+  --color-feuille: #2F7D3A;      /* boutons du hero */
+  --color-feuille-hover: #25692F;
 }
 
 @theme inline {
@@ -56,6 +74,22 @@
 /* Pleine fenêtre sur tous les écrans : plus de cadre de téléphone */
 html {
   background: var(--color-paper);
+  scroll-behavior: smooth; /* ancres de la landing */
+  scroll-padding-top: 4rem; /* l'en-tête fixe de la landing ne cache pas le haut des sections */
+}
+
+/* Barre de défilement fine et discrète dans la sidebar sombre */
+.sidebar-defilement {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+/* Barres de défilement masquées sur les carrousels (le défilement reste possible) */
+.sans-barre {
+  scrollbar-width: none;
+}
+.sans-barre::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -88,6 +122,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
