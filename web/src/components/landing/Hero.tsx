@@ -1,13 +1,16 @@
 // Hero de la landing, fidèle à la maquette d'origine : photo bien visible, cartes vitrées transparentes,
 // mais en pleine largeur (pas de cadre arrondi autour). L'en-tête fixe est à part (EnTeteLanding).
 // Les cartes de droite et le nombre de sites viennent du serveur.
+// Mouvements : photo qui dézoome lentement, cartes vitrées en cascade APRÈS le titre (le titre n'est jamais caché),
+// chiffres du bandeau qui comptent quand ils deviennent visibles.
 import Image from 'next/image'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { CULTURES } from '@/lib/cultures'
 import BoutonAgent from '../agent/BoutonAgent'
 import { NOM_AGENT } from '../agent/questions'
 import { GOUTTIERE } from './constantes'
+import Compteur from './Compteur'
 import { CarteConditions, NombreSites } from './DonneesDirect'
 import {
   IcoBulle,
@@ -34,10 +37,10 @@ const ATOUTS = [
 ] as const
 
 const ETAPES = [
-  { icone: <IcoRepere taille={14} />, couleur: 'text-pousse', label: 'Choisir le site' },
-  { icone: <IcoCible taille={14} />, couleur: 'text-[#7FB2F0]', label: 'Lire le verdict' },
-  { icone: <IcoMicro taille={14} />, couleur: 'text-sun', label: 'Poser sa question' },
-  { icone: <IcoGraine taille={14} />, couleur: 'text-pousse', label: 'Semer' },
+  { icone: <IcoRepere taille={14} />, couleur: 'text-menthe', label: 'Choisir le site' },
+  { icone: <IcoCible taille={14} />, couleur: 'text-info-light', label: 'Lire le verdict' },
+  { icone: <IcoMicro taille={14} />, couleur: 'text-white', label: 'Poser sa question' },
+  { icone: <IcoGraine taille={14} />, couleur: 'text-menthe', label: 'Semer' },
 ] as const
 
 function Chiffre({ icone, valeur, libelle }: { icone: ReactNode; valeur: ReactNode; libelle: string }) {
@@ -54,7 +57,7 @@ function Chiffre({ icone, valeur, libelle }: { icone: ReactNode; valeur: ReactNo
 
 export default function Hero() {
   return (
-    <section id="accueil" aria-labelledby="titre-hero" className="relative isolate overflow-hidden bg-sous-bois pt-20 text-white">
+    <section id="accueil" aria-labelledby="titre-hero" className="fond-sombre relative isolate overflow-hidden bg-sous-bois pt-20 text-white">
       {/* Photo retournée pour que l'agriculteur soit à droite, comme sur la maquette */}
       <Image
         src={PHOTOS.hero}
@@ -63,7 +66,7 @@ export default function Hero() {
         priority
         placeholder="blur"
         sizes="100vw"
-        className="-z-20 -scale-x-100 object-cover object-[35%_center]"
+        className="hero-zoom -z-20 -scale-x-100 object-cover object-[35%_center]"
       />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-sous-bois/90 via-sous-bois/50 to-sous-bois/10" />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-sous-bois/90 via-transparent to-sous-bois/40" />
@@ -73,7 +76,7 @@ export default function Hero() {
           {/* Colonne gauche : message + atouts */}
           <div className="flex min-w-0 flex-col">
             <p className="m-0 inline-flex min-h-8 items-center gap-2 self-start rounded-full border border-white/35 bg-white/10 px-4 py-1.5 text-xs text-white backdrop-blur-md">
-              <span className="text-pousse"><IcoCoche /></span>
+              <span className="text-menthe"><IcoCoche /></span>
               Les données de la NASA au service des champs gabonais
             </p>
             <h1 id="titre-hero" className="m-0 mt-6 font-display text-[clamp(2.3rem,5vw,4.3rem)] leading-[1.05] font-normal tracking-[-0.02em]">
@@ -81,33 +84,34 @@ export default function Hero() {
               <br />
               à semer au <span className="text-pousse">bon moment</span>
               <br />
-              <span className="text-pousse">grâce aux données NASA</span>
+              grâce aux données NASA
             </h1>
             <p className="m-0 mt-5 text-lg text-white/90">Le savoir de nos terroirs. Les mesures des satellites.</p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <BoutonAgent className="flex h-[54px] items-center gap-4 rounded-full border-0 bg-feuille pr-2.5 pl-7 font-sans text-base text-white shadow-lg transition-colors hover:bg-feuille-hover">
+              <BoutonAgent className="bouton-plein group flex h-[54px] items-center gap-4 rounded-full border-0 bg-feuille pr-2.5 pl-7 font-sans text-base text-white hover:bg-feuille-hover">
                 Parler à {NOM_AGENT}
                 <span className="flex size-[34px] items-center justify-center rounded-full border-2 border-white">
-                  <IcoFleche />
+                  <span className="fleche-glisse flex"><IcoFleche /></span>
                 </span>
               </BoutonAgent>
               <Link
                 href="/tableau-de-bord"
-                className="flex h-[54px] items-center gap-4 rounded-full border border-white/50 bg-black/10 pr-2.5 pl-7 text-base text-white no-underline backdrop-blur-md transition-colors hover:bg-white/10"
+                className="bouton-contour group flex h-[54px] items-center gap-4 rounded-full border border-white/50 bg-black/10 pr-2.5 pl-7 text-base text-white no-underline backdrop-blur-md hover:border-white/80 hover:bg-white/15"
               >
                 Voir le tableau de bord
                 <span className="flex size-[34px] items-center justify-center rounded-full border-2 border-white">
-                  <IcoLecture taille={14} />
+                  <span className="fleche-glisse flex"><IcoLecture taille={14} /></span>
                 </span>
               </Link>
             </div>
 
-            <ul className="m-0 mt-12 grid list-none grid-cols-1 gap-3.5 p-0 sm:grid-cols-2 lg:mt-16 xl:grid-cols-4">
-              {ATOUTS.map((a) => (
+            <ul className="hero-cascade m-0 mt-12 grid list-none grid-cols-1 gap-3.5 p-0 sm:grid-cols-2 lg:mt-16 xl:grid-cols-4">
+              {ATOUTS.map((a, i) => (
                 <li
                   key={a.titre[0]}
-                  className="flex flex-col rounded-[20px] border border-white/15 bg-sous-bois/35 p-5 backdrop-blur-md sm:min-h-[186px]"
+                  style={{ '--i': i } as CSSProperties}
+                  className="flex flex-col rounded-3xl border border-white/15 bg-sous-bois/35 p-5 backdrop-blur-md sm:min-h-[186px]"
                 >
                   <span className="flex size-9 items-center justify-center rounded-lg bg-menthe-pale text-[#1F5A2C]">{a.icone}</span>
                   <h2 className="m-0 mt-auto pt-5 font-display text-[17px] leading-snug font-normal text-white sm:pt-8">
@@ -124,7 +128,7 @@ export default function Hero() {
           {/* Colonne droite : données en direct */}
           <div className="flex min-w-0 flex-col gap-3">
             <CarteConditions />
-            <div className="rounded-[22px] border border-white/20 bg-white/[0.06] p-4 backdrop-blur-md lg:mx-5">
+            <div className="rounded-3xl border border-white/20 bg-white/[0.06] p-4 backdrop-blur-md lg:mx-5">
               <div className="flex items-center gap-2.5">
                 <span className="flex size-8 items-center justify-center rounded-lg bg-feuille text-white"><IcoCalendrier taille={16} /></span>
                 <span className="text-[11px] font-medium tracking-[0.1em] text-white/85 uppercase">En 4 étapes</span>
@@ -143,11 +147,11 @@ export default function Hero() {
         </div>
 
         {/* Barre des chiffres */}
-        <div className="mx-auto mt-10 grid max-w-[1160px] grid-cols-1 gap-6 rounded-[26px] border border-white/10 bg-sous-bois/60 px-6 py-6 backdrop-blur-md sm:grid-cols-2 lg:mt-14 lg:flex lg:justify-between lg:px-12">
+        <div className="mx-auto mt-10 grid max-w-[1160px] grid-cols-1 gap-6 rounded-3xl border border-white/10 bg-sous-bois/60 px-6 py-6 backdrop-blur-md sm:grid-cols-2 lg:mt-14 lg:flex lg:justify-between lg:px-12">
           <Chiffre icone={<IcoRepere />} valeur={<NombreSites />} libelle="Sites suivis au Gabon" />
-          <Chiffre icone={<IcoGoutte />} valeur="30 j" libelle="De pluie analysés par site" />
-          <Chiffre icone={<IcoGraine />} valeur={CULTURES.length} libelle="Cultures repères" />
-          <Chiffre icone={<IcoBulle />} valeur="2" libelle="Canaux : web et Telegram" />
+          <Chiffre icone={<IcoGoutte />} valeur={<Compteur valeur={30} suffixe=" j" />} libelle="De pluie analysés par site" />
+          <Chiffre icone={<IcoGraine />} valeur={<Compteur valeur={CULTURES.length} />} libelle="Cultures repères" />
+          <Chiffre icone={<IcoBulle />} valeur={<Compteur valeur={2} />} libelle="Canaux : web et Telegram" />
         </div>
       </div>
     </section>

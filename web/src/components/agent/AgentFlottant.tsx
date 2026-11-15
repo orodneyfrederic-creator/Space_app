@@ -269,7 +269,7 @@ export default function AgentFlottant() {
             aria-controls={idPanneau}
             aria-label={`Ouvrir ${NOM_AGENT}, l'assistant S'STACK`}
             data-visite="agent"
-            className="relative flex size-14 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-vif text-white shadow-[0_10px_30px_-8px_rgba(2,69,52,0.6)] transition-transform hover:scale-105"
+            className="relative flex size-14 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-vif text-white shadow-[0_10px_30px_-8px_rgba(2,69,52,0.6)] transition-[transform,box-shadow] duration-(--duree) ease-(--ease-sortie) hover:scale-[1.06] hover:shadow-[0_16px_36px_-8px_rgba(2,69,52,0.7)] motion-reduce:hover:scale-100"
           >
             <IcoGraine taille={24} />
             <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white bg-sun" />

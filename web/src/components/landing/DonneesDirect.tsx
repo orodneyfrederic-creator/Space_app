@@ -3,6 +3,7 @@
 // verdict de semis du site choisi, pluie des derniers jours (NASA POWER) et nombre de sites suivis.
 // Jamais de chiffre inventé : en attendant ou en cas d'erreur, la carte le dit.
 import type { ReactNode } from 'react'
+import Compteur from './Compteur'
 import { getFiche, getSites } from '@/lib/api'
 import { ecartFr, lireFiche, nombreFr } from '@/lib/fiche'
 import { useSiteChoisi } from '@/lib/site-choisi'
@@ -60,7 +61,7 @@ export function CarteConditions() {
   const v = TEXTE_VERDICT[lue?.verdict ?? 'inconnu']
 
   return (
-    <div className="rounded-[22px] border border-white/15 bg-white/[0.08] p-5 backdrop-blur-md">
+    <div className="rounded-3xl border border-white/15 bg-white/[0.08] p-5 backdrop-blur-md">
       {/* Verdict de semis */}
       <EnTeteCarte icone={<IcoCible taille={16} />} titre="Verdict de semis" />
       <div aria-live="polite" className="mt-5">
@@ -125,5 +126,5 @@ export function CarteConditions() {
 /** Nombre de sites suivis, lu sur le serveur (« — » tant qu'il n'est pas connu). */
 export function NombreSites() {
   const sites = useApi(getSites, 'sites')
-  return <>{sites.statut === 'pret' ? sites.donnees.length : '—'}</>
+  return sites.statut === 'pret' ? <Compteur valeur={sites.donnees.length} /> : <>—</>
 }

@@ -1,5 +1,6 @@
 // Sections de la landing, sous le hero. Pleine largeur, angles droits, aplats verts
-// (design system CNX 4.0). Aucune donnée inventée : pas de faux témoignages ni de faux
+// (design system CNX 4.0). Survols et apparitions : classes de globals.css (carte-interactive, fleche-glisse,
+// data-apparait, data-cascade…), voir FRONTEND.md « Mouvements et survols ». Aucune donnée inventée : pas de faux témoignages ni de faux
 // chiffres d'impact, seulement ce que l'application fait et des questions à poser à l'agent.
 import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
@@ -15,7 +16,7 @@ import { IcoBulle, IcoCarte, IcoFleche, IcoGraphique, IcoGuillemets, IcoHorloge,
 import { CREDITS, PHOTOS } from './photos'
 import Solutions from './Solutions'
 
-const TITRE_H2 = 'm-0 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-bold tracking-[-0.04em] text-encre'
+const TITRE_H2 = 'm-0 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-bold tracking-[-0.02em] text-encre'
 
 /** Petit sur-titre : trait vert + libellé en capitales. */
 function SurTitre({ children, clair = false }: { children: ReactNode; clair?: boolean }) {
@@ -29,7 +30,7 @@ function SurTitre({ children, clair = false }: { children: ReactNode; clair?: bo
 
 function PhotoEnLigne({ photo, alt }: { photo: StaticImageData; alt: string }) {
   return (
-    <span className="relative mx-2 inline-block h-[0.95em] w-[2.2em] -translate-y-[0.04em] overflow-hidden rounded-full align-middle">
+    <span className="photo-ligne relative mx-2 inline-block h-[0.95em] w-[2.2em] -translate-y-[0.04em] overflow-hidden rounded-full align-middle">
       <Image src={photo} alt={alt} fill sizes="120px" className="object-cover" />
     </span>
   )
@@ -39,8 +40,10 @@ function PhotoEnLigne({ photo, alt }: { photo: StaticImageData; alt: string }) {
 function APropos() {
   return (
     <section id="a-propos" aria-label="À propos" className={`grid grid-cols-1 gap-8 bg-white py-24 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12 lg:py-32 ${GOUTTIERE}`}>
-      <SurTitre>À propos</SurTitre>
-      <p className="m-0 font-display text-[clamp(1.7rem,3.6vw,3.3rem)] leading-[1.25] font-semibold tracking-[-0.03em] text-encre">
+      <div data-apparait>
+        <SurTitre>À propos</SurTitre>
+      </div>
+      <p data-apparait className="m-0 font-display text-[clamp(1.7rem,3.6vw,3.3rem)] leading-[1.25] font-semibold tracking-[-0.03em] text-encre">
         Nous aidons les producteurs
         <PhotoEnLigne photo={PHOTOS.pastille1} alt="Une agricultrice tient une poignée d’herbe." />
         à semer au <span className="text-success">bon moment</span>, grâce aux mesures des satellites
@@ -58,7 +61,7 @@ function SectionSolutions() {
   return (
     <section id="solutions" aria-labelledby="titre-solutions" className="bg-pale py-24 lg:py-32">
       <div className={`flex flex-wrap items-end justify-between gap-6 pb-12 ${GOUTTIERE}`}>
-        <div className="flex flex-col gap-5">
+        <div data-apparait className="flex flex-col gap-5">
           <SurTitre>Solutions</SurTitre>
           <h2 id="titre-solutions" className={TITRE_H2}>
             Des solutions pour vos champs
@@ -66,9 +69,9 @@ function SectionSolutions() {
         </div>
         <Link
           href="/tableau-de-bord"
-          className="flex h-12 items-center gap-2 rounded-[10px] border border-cnx px-6 text-sm font-semibold text-cnx no-underline transition-colors hover:bg-cnx hover:text-white"
+          className="bouton-contour group flex h-12 items-center gap-2 rounded-full border border-cnx px-6 text-sm font-semibold text-cnx no-underline hover:border-vif-hover hover:bg-white"
         >
-          Tout voir <IcoFleche taille={14} />
+          Tout voir <span className="fleche-glisse flex"><IcoFleche taille={14} /></span>
         </Link>
       </div>
       <Solutions />
@@ -87,7 +90,7 @@ const OUTILS = [
 function Outils() {
   return (
     <section id="outils" aria-labelledby="titre-outils" className="bg-white py-24 lg:py-32">
-      <div className={`flex flex-col gap-5 pb-12 ${GOUTTIERE}`}>
+      <div data-apparait className={`flex flex-col gap-5 pb-12 ${GOUTTIERE}`}>
         <SurTitre>Outils</SurTitre>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <h2 id="titre-outils" className={TITRE_H2}>Nos outils</h2>
@@ -96,22 +99,22 @@ function Outils() {
           </p>
         </div>
       </div>
-      <ul className={`m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 ${GOUTTIERE}`}>
+      <ul data-cascade className={`m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 ${GOUTTIERE}`}>
         {OUTILS.map((o, i) => (
           <li key={o.href} className="flex">
             <Link
               href={o.href}
-              className="group flex min-h-[280px] w-full flex-col justify-between gap-10 rounded-2xl border border-[#D9E3DD] bg-white p-8 no-underline transition-colors hover:border-profond hover:bg-profond lg:p-9"
+              className="carte carte-interactive group flex min-h-[280px] w-full flex-col justify-between gap-10 rounded-3xl bg-white p-8 no-underline lg:p-9"
             >
               <span className="flex items-start justify-between">
-                <span className="text-cnx transition-colors group-hover:text-menthe">{o.icone}</span>
-                <span className="font-mono text-sm text-ardoise transition-colors group-hover:text-white/60">0{i + 1}</span>
+                <span className="pastille-icone flex size-14 items-center justify-center rounded-2xl bg-accent-soft text-cnx">{o.icone}</span>
+                <span className="font-mono text-sm text-ardoise">0{i + 1}</span>
               </span>
               <span className="flex flex-col gap-3">
-                <span className="font-display text-2xl font-bold tracking-[-0.02em] text-encre transition-colors group-hover:text-white">{o.titre}</span>
-                <span className="text-sm leading-relaxed text-ardoise transition-colors group-hover:text-white/75">{o.texte}</span>
-                <span className="mt-2 flex items-center gap-2 text-sm font-semibold text-cnx transition-colors group-hover:text-menthe">
-                  Ouvrir <IcoFleche taille={14} />
+                <span className="font-display text-2xl font-bold tracking-[-0.02em] text-encre">{o.titre}</span>
+                <span className="text-sm leading-relaxed text-ardoise">{o.texte}</span>
+                <span className="mt-2 flex items-center gap-2 text-sm font-semibold text-cnx">
+                  Ouvrir <span className="fleche-glisse flex"><IcoFleche taille={14} /></span>
                 </span>
               </span>
             </Link>
@@ -131,23 +134,25 @@ const ETAPES_METHODE = [
 
 function Methode() {
   return (
-    <section id="methode" aria-labelledby="titre-methode" className="grid grid-cols-1 bg-profond text-white lg:grid-cols-2">
+    <section id="methode" aria-labelledby="titre-methode" className="fond-foret fond-sombre grid grid-cols-1 text-white lg:grid-cols-2">
       <div className="relative m-4 min-h-[360px] overflow-hidden rounded-2xl lg:m-6 lg:min-h-[600px]">
         <Image src={PHOTOS.impact} alt="Une agricultrice plante du manioc sur une colline, d’autres travaillent derrière elle." fill sizes="(min-width: 1024px) 50vw, 100vw" placeholder="blur" className="object-cover" />
       </div>
       <div className={`flex flex-col justify-center gap-8 py-20 lg:py-24 ${GOUTTIERE}`}>
-        <SurTitre clair>Méthode</SurTitre>
-        <h2 id="titre-methode" className="m-0 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-bold tracking-[-0.04em]">
+        <div data-apparait>
+          <SurTitre clair>Méthode</SurTitre>
+        </div>
+        <h2 data-apparait id="titre-methode" className="m-0 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-bold tracking-[-0.02em]">
           Des satellites jusqu&apos;à <span className="text-pousse">votre champ</span>.
         </h2>
-        <p className="m-0 max-w-[56ch] text-base leading-relaxed text-white/75">
+        <p data-apparait className="m-0 max-w-[56ch] text-base leading-relaxed text-white/75">
           Pas de capteur à acheter ni de matériel à installer : les données viennent des satellites et des modèles de la NASA, et de la base
           de sols SoilGrids.
         </p>
-        <ol className="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
+        <ol data-cascade className="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
           {ETAPES_METHODE.map((e) => (
             <li key={e.n} className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.05] p-5">
-              <span className="font-mono text-3xl font-bold text-pousse">{e.n}</span>
+              <span className="font-mono text-3xl font-bold text-menthe">{e.n}</span>
               <span className="text-lg font-semibold">{e.titre}</span>
               <span className="text-sm leading-relaxed text-white/70">{e.texte}</span>
             </li>
@@ -173,7 +178,7 @@ function Questions() {
         <Carrousel
           etiquette="Questions à poser à l'agent"
           entete={
-            <div className="flex flex-col gap-5">
+            <div data-apparait className="flex flex-col gap-5">
               <SurTitre>Questions</SurTitre>
               <h2 id="titre-questions" className={TITRE_H2}>
                 Ce que les producteurs demandent
@@ -187,9 +192,9 @@ function Questions() {
             const question = c.questions[0]
             return (
               <li key={c.id} className="w-[min(640px,88vw)] shrink-0 snap-start">
-                <article className="grid h-full grid-cols-1 gap-2 rounded-2xl border border-[#D9E3DD] bg-white p-2 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
-                  <div className="relative h-56 overflow-hidden rounded-xl sm:h-full sm:min-h-[300px]">
-                    <Image src={photo} alt={alt} fill sizes="(min-width: 640px) 300px, 88vw" placeholder="blur" className="object-cover" />
+                <article className="carte carte-interactive group grid h-full grid-cols-1 gap-2 rounded-3xl bg-white p-2 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
+                  <div className="relative h-56 overflow-hidden rounded-2xl sm:h-full sm:min-h-[300px]">
+                    <Image src={photo} alt={alt} fill sizes="(min-width: 640px) 300px, 88vw" placeholder="blur" className="photo-zoom object-cover" />
                   </div>
                   <div className="flex flex-col gap-4 p-5 sm:p-6">
                     <span className="text-vif"><IcoGuillemets taille={30} /></span>
@@ -197,9 +202,9 @@ function Questions() {
                     <p className="m-0 font-display text-xl leading-snug font-semibold tracking-[-0.01em] text-encre">{question}</p>
                     <BoutonAgent
                       question={question}
-                      className="mt-auto flex h-12 w-full items-center justify-between gap-3 rounded-[10px] border-0 bg-pale px-4 font-sans text-sm font-semibold text-cnx transition-colors hover:bg-[#E3EEE8]"
+                      className="bouton-contour mt-auto flex h-12 w-full items-center justify-between gap-3 rounded-full border-0 bg-pale px-5 font-sans text-sm font-semibold text-cnx hover:bg-accent-soft"
                     >
-                      Demander à {NOM_AGENT} <IcoFleche taille={16} />
+                      Demander à {NOM_AGENT} <span className="fleche-glisse flex"><IcoFleche taille={16} /></span>
                     </BoutonAgent>
                   </div>
                 </article>
@@ -223,7 +228,7 @@ const PHOTO_CULTURE: Record<Culture['id'], { photo: StaticImageData; alt: string
 function Reperes() {
   return (
     <section id="cultures" aria-labelledby="titre-cultures" className="bg-white py-24 lg:py-32">
-      <div className={`flex flex-col gap-5 pb-12 ${GOUTTIERE}`}>
+      <div data-apparait className={`flex flex-col gap-5 pb-12 ${GOUTTIERE}`}>
         <SurTitre>Cultures</SurTitre>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <h2 id="titre-cultures" className={TITRE_H2}>Repères par culture</h2>
@@ -232,12 +237,12 @@ function Reperes() {
           </p>
         </div>
       </div>
-      <ul className={`m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 ${GOUTTIERE}`}>
+      <ul data-cascade className={`m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 ${GOUTTIERE}`}>
         {CULTURES.map((c) => {
           const { photo, alt } = PHOTO_CULTURE[c.id]
           return (
             <li key={c.id} className="flex">
-              <Link href="/cultures" className="group flex w-full flex-col overflow-hidden rounded-2xl border border-[#D9E3DD] bg-white no-underline transition-shadow hover:shadow-[0_20px_40px_-24px_rgba(2,69,52,0.45)]">
+              <Link href="/cultures" className="carte carte-interactive group flex w-full flex-col overflow-hidden rounded-3xl bg-white no-underline">
                 <div className="relative h-64 overflow-hidden">
                   <Image
                     src={photo}
@@ -245,7 +250,7 @@ function Reperes() {
                     fill
                     sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                     placeholder="blur"
-                    className={`object-cover transition-transform duration-500 group-hover:scale-105 ${c.id === 'mais' ? 'object-top' : ''}`}
+                    className={`photo-zoom object-cover ${c.id === 'mais' ? 'object-top' : ''}`}
                   />
                 </div>
                 <div className="flex flex-1 flex-col gap-3 p-7">
@@ -253,7 +258,7 @@ function Reperes() {
                   <h3 className="m-0 font-display text-2xl font-bold tracking-[-0.02em] text-encre">{c.nom}</h3>
                   <p className="m-0 text-sm leading-relaxed text-ardoise">{c.repere}</p>
                   <span className="mt-auto flex items-center gap-2 pt-3 text-sm font-semibold text-cnx group-hover:text-vif-hover">
-                    Voir les questions <IcoFleche taille={14} />
+                    Voir les questions <span className="fleche-glisse flex"><IcoFleche taille={14} /></span>
                   </span>
                 </div>
               </Link>
@@ -268,9 +273,9 @@ function Reperes() {
 /* ─────────────── Appel à l'action ─────────────── */
 function Appel() {
   return (
-    <section aria-labelledby="titre-appel" className={`flex flex-col items-start justify-between gap-10 bg-cnx py-20 text-white lg:flex-row lg:items-end lg:py-24 ${GOUTTIERE}`}>
-      <div className="flex flex-col gap-5">
-        <h2 id="titre-appel" className="m-0 font-display text-[clamp(2.2rem,4.6vw,4rem)] leading-[1.02] font-bold tracking-[-0.04em]">
+    <section aria-labelledby="titre-appel" className={`fond-foret fond-sombre flex flex-col items-start justify-between gap-10 py-20 text-white lg:flex-row lg:items-end lg:py-24 ${GOUTTIERE}`}>
+      <div data-apparait className="flex flex-col gap-5">
+        <h2 id="titre-appel" className="m-0 font-display text-[clamp(2.2rem,4.6vw,4rem)] leading-[1.05] font-bold tracking-[-0.02em]">
           Prêt à semer au bon moment&nbsp;?
         </h2>
         <p className="m-0 max-w-[56ch] text-lg text-white/90">
@@ -281,11 +286,11 @@ function Appel() {
           .
         </p>
       </div>
-      <div className="flex flex-wrap gap-3">
-        <Link href="/inscription" className="flex h-14 items-center gap-3 rounded-[10px] bg-white px-7 text-base font-semibold text-profond no-underline hover:bg-pale">
-          Créer un compte <IcoFleche />
+      <div data-apparait className="flex flex-wrap gap-3">
+        <Link href="/inscription" className="bouton-plein group flex h-14 items-center gap-3 rounded-full bg-white px-7 text-base font-semibold text-profond no-underline hover:bg-pale">
+          Créer un compte <span className="fleche-glisse flex"><IcoFleche /></span>
         </Link>
-        <BoutonAgent className="flex h-14 items-center gap-3 rounded-[10px] border border-white bg-transparent px-7 font-sans text-base font-semibold text-white hover:bg-white/10">
+        <BoutonAgent className="bouton-contour flex h-14 items-center gap-3 rounded-full border border-white bg-transparent px-7 font-sans text-base font-semibold text-white hover:bg-white/15">
           Parler à {NOM_AGENT} <IcoBulle />
         </BoutonAgent>
       </div>
@@ -312,11 +317,11 @@ const SOURCES = [
 
 function PiedDePage() {
   const titreCol = 'm-0 mb-5 text-xs font-semibold tracking-[0.16em] text-menthe uppercase'
-  const lien = 'text-sm text-white/80 no-underline hover:text-white'
+  const lien = 'lien-souligne text-sm text-white/80 transition-colors duration-(--duree-rapide) hover:text-white'
   return (
-    <footer className="bg-nuit text-white">
+    <footer className="fond-sombre bg-nuit text-white">
       <div aria-hidden="true" className="bande-tricolore" />
-      <div className={`grid grid-cols-1 gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr] ${GOUTTIERE}`}>
+      <div data-cascade className={`grid grid-cols-1 gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr] ${GOUTTIERE}`}>
         <div className="flex flex-col gap-5">
           <Logo clair sousTitre="Conseils de semis" />
           <p className="m-0 max-w-[40ch] text-sm leading-relaxed text-white/65">

@@ -85,3 +85,32 @@ Source unique : `server/src/types/api.ts` (recopié dans `src/lib/types.ts`). Er
 | `POST /api/conseil` | Question écrite à l'agent |
 | `POST /api/voix` | Question vocale (`audio` webm, `lat`, `lon`, `nomLieu?`) |
 | `GET /api/conseils?limit=20` | Historique (Supabase) |
+
+## Mouvements et survols (landing)
+
+Tout est en CSS (`src/app/globals.css`) + un petit hook ; **aucune bibliothèque d'animation**.
+
+**Jetons** (dans `:root`) : courbes `--ease-sortie` (la courbe « premium ») et `--ease-standard` ; durées `--duree-rapide` (240 ms, couleurs), `--duree` (450 ms, survols), `--duree-lente` (800 ms, en-tête), `--duree-apparition` (1,1 s, apparitions, avec `--ecart-apparition` de 24 px et un léger flou qui se dissipe) ; ombres teintées `--ombre-1`, `--ombre-2`, `--ombre-3`. En Tailwind : `duration-(--duree)`, `ease-(--ease-sortie)`, `shadow-(--ombre-2)`.
+
+**Classes utilitaires :**
+
+| Classe | Effet |
+|---|---|
+| `.bouton-plein` | monte de 1 px et ombre plus forte au survol, se compresse (0,98) au clic |
+| `.bouton-contour` | fond et bordure en fondu (couleurs via `hover:` Tailwind) |
+| `.carte` | bordure Noir Ébène 6 % + `--ombre-1` |
+| `.carte-interactive` | monte de 4 px, `--ombre-3`, bordure Vert Forêt 20 % ; une image `.photo-zoom` à l'intérieur zoome à 105 % |
+| `.fleche-glisse` / `.fleche-diagonale` | flèche qui glisse dans sa direction (parent `.group`) |
+| `.pastille-icone` | pastille d'icône qui tourne de −6° (parent `.group`) |
+| `.lien-souligne` | soulignement qui se dessine de gauche à droite |
+| `.verre` | verre dépoli clair (en-tête défilé, menu mobile), repli opaque sans `backdrop-filter` |
+| `.fond-foret` | dégradé Vert Forêt + halo Vert Gabon (sections Méthode et Appel) |
+| `.fond-sombre` | sur une zone sombre : le focus clavier passe en Jaune Soleil (sinon Vert Forêt, via `.landing`) |
+
+**Apparitions au défilement :** `useApparition` (`src/lib/use-apparition.ts`, monté par `components/landing/Apparitions.tsx`). Mettre `data-apparait` sur un élément (fondu, 24 px et flou qui se dissipe à l'entrée dans l'écran, une seule fois) ou `data-cascade` sur une liste (enfants décalés de 120 ms, 6 au maximum). Le hook pose `js-anime` sur `<html>` : sans JavaScript, tout reste visible. Hero : `.hero-zoom` (photo) et `.hero-cascade` (cartes vitrées, avec `--i`) ; chiffres du bandeau : `components/landing/Compteur.tsx`.
+
+**Règles :**
+- n'animer que `transform` et `opacity` (plus couleurs, bordures, ombres, `clip-path` pour les survols courts), jamais `width`, `height`, `top`, `left` ;
+- le titre et la photo du hero ne sont **jamais** cachés au chargement ;
+- `prefers-reduced-motion: reduce` : apparitions visibles tout de suite, pas de zoom ni de déplacement, compteurs affichés directement ;
+- effets de survol seulement sur les appareils avec souris (`@media (hover: hover)`), toujours doublés d'un `focus-visible`.
