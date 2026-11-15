@@ -40,25 +40,25 @@ const Q = {
   compte: {
     texte: 'Comment créer un compte ?',
     reponse:
-      "Remplissez le formulaire [Créer un compte](/inscription). La connexion n'est pas encore branchée : pour l'instant, valider le formulaire ouvre directement le [tableau de bord](/tableau-de-bord).",
+      "Remplissez le formulaire [Créer un compte](/inscription) : votre nom, votre numéro de téléphone (par exemple 077 12 34 56), votre ville et un mot de passe. Ensuite, vous vous connectez avec ce numéro et ce mot de passe, sur le site comme sur Telegram.",
     motsCles: ['compte', 'inscri'],
   },
   sansCompte: {
     texte: "Puis-je utiliser S'STACK sans compte ?",
     reponse:
-      "Oui. Le [tableau de bord](/tableau-de-bord), la [carte](/carte) et les [données](/donnees) sont ouverts à tous. Le compte servira plus tard à retrouver vos sites et votre historique.",
+      "Il faut un compte pour ouvrir l'espace agriculteur et poser vos questions à l'agent, sur le site comme sur Telegram. Il est gratuit et se crée en une minute : [Créer un compte](/inscription).",
     motsCles: ['sans compte'],
   },
   motDePasse: {
     texte: "J'ai oublié mon mot de passe",
     reponse:
-      "La connexion n'est pas encore branchée, il n'y a donc pas encore de mot de passe à récupérer. [Se connecter](/connexion) avec n'importe quelle adresse ouvre le tableau de bord.",
+      "Il n'y a pas encore de récupération automatique du mot de passe (pas de SMS). Contactez l'équipe S'STACK : elle pourra remettre votre compte à zéro. Ensuite, [connectez-vous](/connexion) avec votre numéro de téléphone.",
     motsCles: ['mot de passe', 'connexion', 'connecter'],
   },
   telegram: {
     texte: "Comment utiliser S'STACK sur Telegram ?",
     reponse:
-      "Le bot Telegram S'STACK répond aux mêmes questions. Envoyez **/start**, partagez votre position ou choisissez la ville la plus proche, puis posez votre question **par écrit ou par message vocal**. Ses conseils apparaissent aussi dans l'[historique](/historique).",
+      "Le bot s'appelle **@sstack_agri_bot** : [ouvrez-le ici](https://t.me/sstack_agri_bot), ou cherchez ce nom dans Telegram.\n- Touchez **Démarrer**, puis **📱 Partager mon numéro** : votre compte S'STACK est relié (il faut le même numéro).\n- Partagez votre position ou choisissez votre ville.\n- Posez votre question **par écrit ou par message vocal**.\n\nSes conseils apparaissent aussi dans votre [historique](/historique).",
     motsCles: ['telegram'],
   },
   tableau: {

@@ -50,3 +50,28 @@ export type Conseil = {
   reponse: string
   fournisseur: string
 }
+
+// ── Comptes des producteurs (téléphone + mot de passe) ──
+// Les routes /conseil, /voix et /conseils demandent l'en-tête « Authorization: Bearer <jeton> ».
+
+export type Utilisateur = {
+  id: string
+  nom: string
+  telephone: string // +2410XXXXXXXX
+  siteId: string | null // ville S'STACK choisie à l'inscription
+  telegramLie: boolean // vrai si le bot Telegram est relié à ce compte
+}
+
+export type DemandeInscription = {
+  nom: string // 2 à 60 caractères
+  telephone: string // numéro gabonais, écrit librement (« 077 12 34 56 », « +241 77 12 34 56 »…)
+  motDePasse: string // 8 à 72 caractères
+  siteId?: string // id d'un Site
+}
+
+export type DemandeConnexion = { telephone: string; motDePasse: string }
+
+export type ReponseAuth = {
+  jeton: string // valable 30 jours
+  utilisateur: Utilisateur
+}

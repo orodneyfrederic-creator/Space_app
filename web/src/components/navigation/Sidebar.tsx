@@ -5,10 +5,12 @@
 // Suspense : usePathname() n'est connu qu'au moment de la requête (Next.js 16) ; en attendant,
 // la même sidebar s'affiche sans entrée active.
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import BoutonVisite, { IcoVisite } from '../aide/BoutonVisite'
 import { Survol } from '../aide/Infobulle'
+import { deconnecter } from '@/lib/api'
+import { useSession } from '@/lib/session'
 import { IcoChevron, IcoFermer, IcoTableau } from '../landing/icones'
 import Logo from './Logo'
 import { CENTRE_AIDE, estPageActive, EVENEMENT_OUVRIR_MENU, PARAMETRES, RUBRIQUES, type PageMenu, type Rubrique, VUE_ENSEMBLE } from './menu'
@@ -114,7 +116,33 @@ function Contenu({ chemin, surFermeture }: { chemin: string | null; surFermeture
           <IcoVisite />
           Visite guidée
         </BoutonVisite>
+        <BlocCompte />
       </div>
+    </div>
+  )
+}
+
+/** Producteur connecté + déconnexion (la garde renvoie ensuite vers /connexion). */
+function BlocCompte() {
+  const session = useSession()
+  const router = useRouter()
+  if (!session) return null
+  return (
+    <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 px-3 pt-3">
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate text-[14px] font-semibold text-white">{session.utilisateur.nom}</span>
+        <span className="font-mono text-[12px] text-white/60">{session.utilisateur.telephone.replace(/^\+241(\d{3})(\d{2})(\d{2})(\d{2})$/, '$1 $2 $3 $4')}</span>
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          deconnecter()
+          router.push('/connexion')
+        }}
+        className="min-h-10 shrink-0 cursor-pointer rounded-lg border border-white/20 bg-transparent px-3 font-sans text-[13px] font-semibold text-white/85 hover:bg-white/10 hover:text-white"
+      >
+        Se déconnecter
+      </button>
     </div>
   )
 }

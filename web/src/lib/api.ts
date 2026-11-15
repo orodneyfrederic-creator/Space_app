@@ -1,5 +1,17 @@
 // Appels au serveur S'STACK (server/, Hono). Une fonction par route du contrat (lib/types.ts).
-import type { ApercuSite, Conseil, DemandeConseil, FicheComplete, ReponseAgent, Site } from './types'
+import { effacerSession, enregistrerSession, lireJeton } from './session'
+import type {
+  ApercuSite,
+  Conseil,
+  DemandeConnexion,
+  DemandeConseil,
+  DemandeInscription,
+  FicheComplete,
+  ReponseAgent,
+  ReponseAuth,
+  Site,
+  Utilisateur,
+} from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 const DELAI_MS = 30_000
@@ -15,9 +27,13 @@ export class ErreurApi extends Error {
 }
 
 async function appeler<T>(chemin: string, init?: RequestInit): Promise<T> {
+  // Jeton du producteur connecté (exigé par /conseil, /voix, /conseils et /auth/moi)
+  const jeton = typeof window === 'undefined' ? null : lireJeton()
+  const entetes = new Headers(init?.headers)
+  if (jeton) entetes.set('authorization', `Bearer ${jeton}`)
   let reponse: Response
   try {
-    reponse = await fetch(`${API_URL}${chemin}`, { ...init, signal: AbortSignal.timeout(DELAI_MS) })
+    reponse = await fetch(`${API_URL}${chemin}`, { ...init, headers: entetes, signal: AbortSignal.timeout(DELAI_MS) })
   } catch (erreur) {
     // Serveur éteint, réseau coupé ou délai dépassé
     if (erreur instanceof DOMException && erreur.name === 'TimeoutError') {
@@ -31,6 +47,8 @@ async function appeler<T>(chemin: string, init?: RequestInit): Promise<T> {
       corps && typeof corps === 'object' && 'erreur' in corps && typeof corps.erreur === 'string'
         ? corps.erreur
         : `Erreur du serveur (${reponse.status}).`
+    // Jeton expiré ou refusé : on oublie la session, le producteur devra se reconnecter
+    if (reponse.status === 401 && jeton) effacerSession()
     throw new ErreurApi(message, reponse.status)
   }
   return (await reponse.json()) as T
@@ -66,3 +84,33 @@ export function envoyerVocal(audio: Blob, lieu: { lat: number; lon: number; nomL
 }
 
 export const listerConseils = (limite = 20) => appeler<Conseil[]>(`/api/conseils?limit=${limite}`)
+
+// ── Comptes : inscription et connexion par numéro de téléphone + mot de passe ──
+// En cas de succès, la session est enregistrée (lib/session.ts) : les appels suivants portent le jeton.
+
+/** Erreurs possibles : 400 (champ invalide, message prêt à afficher), 409 (numéro déjà inscrit), 429 (trop d'essais). */
+export async function inscrire(demande: DemandeInscription): Promise<ReponseAuth> {
+  const session = await appeler<ReponseAuth>('/api/auth/inscription', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(demande),
+  })
+  enregistrerSession(session)
+  return session
+}
+
+/** Erreurs possibles : 400 (champ invalide), 401 (numéro ou mot de passe incorrect), 429 (trop d'essais). */
+export async function connecter(demande: DemandeConnexion): Promise<ReponseAuth> {
+  const session = await appeler<ReponseAuth>('/api/auth/connexion', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(demande),
+  })
+  enregistrerSession(session)
+  return session
+}
+
+/** Profil du producteur connecté (401 si la session a expiré). */
+export const getMoi = () => appeler<Utilisateur>('/api/auth/moi')
+
+export const deconnecter = () => effacerSession()

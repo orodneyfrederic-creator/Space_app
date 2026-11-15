@@ -5,6 +5,7 @@ import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { CULTURES, type Culture } from '@/lib/cultures'
+import { LIEN_BOT_TELEGRAM, NOM_BOT_TELEGRAM } from '@/lib/telegram'
 import BoutonAgent from '../agent/BoutonAgent'
 import { NOM_AGENT } from '../agent/questions'
 import Logo from '../navigation/Logo'
@@ -273,7 +274,11 @@ function Appel() {
           Prêt à semer au bon moment&nbsp;?
         </h2>
         <p className="m-0 max-w-[56ch] text-lg text-white/90">
-          Créez votre compte, choisissez votre site et laissez {NOM_AGENT} vous guider, sur le web ou sur Telegram.
+          Créez votre compte, choisissez votre site et laissez {NOM_AGENT} vous guider, sur le web ou sur Telegram avec le bot{' '}
+          <a href={LIEN_BOT_TELEGRAM} target="_blank" rel="noreferrer" className="font-mono font-semibold whitespace-nowrap text-pousse underline underline-offset-4 hover:text-white">
+            {NOM_BOT_TELEGRAM}
+          </a>
+          .
         </p>
       </div>
       <div className="flex flex-wrap gap-3">
@@ -322,6 +327,11 @@ function PiedDePage() {
           <p className={titreCol}>Application</p>
           <ul className="m-0 flex list-none flex-col gap-3 p-0">
             {LIENS_APP.map((l) => <li key={l.href}><Link href={l.href} className={lien}>{l.label}</Link></li>)}
+            <li>
+              <a href={LIEN_BOT_TELEGRAM} target="_blank" rel="noreferrer" className={lien}>
+                Bot Telegram {NOM_BOT_TELEGRAM}
+              </a>
+            </li>
           </ul>
         </nav>
         <nav aria-label="Sur cette page">

@@ -39,6 +39,11 @@ const ETAPES: readonly Etape[] = [
     texte: 'Vous voyez l’avis de chaque ville. Touchez une ville pour la choisir.',
   },
   {
+    cible: 'telegram',
+    titre: 'Aussi sur Telegram',
+    texte: 'Vous avez Telegram ? Posez vos questions au bot @sstack_agri_bot, par écrit ou par message vocal. Suivez les 3 étapes de cette carte.',
+  },
+  {
     cible: 'agent',
     cote: 'haut',
     titre: 'Posez vos questions',

@@ -1,4 +1,4 @@
-// Page d'inscription (authentification pas encore branchée : elle garde le site choisi et ouvre le tableau de bord).
+// Page d'inscription : crée le compte (numéro de téléphone + mot de passe), puis ouvre /bienvenue.
 import type { Metadata } from 'next'
 import CadreAuth from '@/components/auth/CadreAuth'
 import FormInscription from '@/components/auth/FormInscription'

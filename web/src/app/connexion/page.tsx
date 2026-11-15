@@ -1,4 +1,4 @@
-// Page de connexion (authentification pas encore branchée : elle ouvre le tableau de bord).
+// Page de connexion : numéro de téléphone + mot de passe, puis la page demandée ou le tableau de bord.
 import type { Metadata } from 'next'
 import CadreAuth from '@/components/auth/CadreAuth'
 import FormConnexion from '@/components/auth/FormConnexion'

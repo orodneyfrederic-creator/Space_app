@@ -1,5 +1,5 @@
 // Accès à Supabase côté serveur (clé secrète service_role : jamais dans web/).
-// Table : public.conseils (supabase/migrations/001_schema.sql).
+// Tables : public.conseils (001_schema.sql) et public.utilisateurs (002_utilisateurs.sql).
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import type { Conseil, DemandeConseil, ReponseAgent } from '../types/api.js'
@@ -7,7 +7,7 @@ import type { Conseil, DemandeConseil, ReponseAgent } from '../types/api.js'
 let client: SupabaseClient | null | undefined
 
 /** Client serveur, ou null si les variables Supabase manquent (le serveur continue sans historique). */
-function getClient(): SupabaseClient | null {
+export function getClient(): SupabaseClient | null {
   if (client !== undefined) return client
   const url = process.env.SUPABASE_URL
   const cle = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -23,12 +23,13 @@ function getClient(): SupabaseClient | null {
 /**
  * Enregistre un conseil donné. Ne lève jamais d'erreur : si Supabase échoue, on journalise
  * et on renvoie undefined (la réponse au producteur part quand même).
- * Aucune donnée personnelle : ni nom, ni numéro de téléphone.
+ * Le conseil est rattaché au compte du producteur (utilisateurId), sans recopier ni nom ni numéro.
  */
 export async function enregistrerConseil(
   demande: DemandeConseil,
   reponse: ReponseAgent,
   canal: 'web' | 'telegram',
+  utilisateurId: string,
 ): Promise<string | undefined> {
   const supabase = getClient()
   if (!supabase) return undefined
@@ -37,6 +38,7 @@ export async function enregistrerConseil(
       .from('conseils')
       .insert({
         canal,
+        utilisateur_id: utilisateurId,
         nom_lieu: demande.nomLieu ?? null,
         lat: demande.lat,
         lon: demande.lon,
@@ -67,13 +69,14 @@ const LigneConseil = z.object({
   fournisseur: z.string(),
 })
 
-/** Les derniers conseils, du plus récent au plus ancien (en camelCase pour le front-end). */
-export async function listerConseils(limite: number): Promise<Conseil[]> {
+/** Les derniers conseils d'un producteur, du plus récent au plus ancien (en camelCase pour le front-end). */
+export async function listerConseils(utilisateurId: string, limite: number): Promise<Conseil[]> {
   const supabase = getClient()
   if (!supabase) throw new Error('Historique indisponible : Supabase n\'est pas configuré.')
   const { data, error } = await supabase
     .from('conseils')
     .select('id, created_at, canal, nom_lieu, question, reponse, fournisseur')
+    .eq('utilisateur_id', utilisateurId)
     .order('created_at', { ascending: false })
     .limit(limite)
   if (error) throw new Error(`Lecture de l'historique impossible : ${error.message}`)

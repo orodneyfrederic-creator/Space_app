@@ -1,44 +1,64 @@
 'use client'
-// Formulaire d'inscription. L'authentification n'est pas encore branchée :
-// un formulaire valide garde seulement le site choisi (dans le navigateur, comme le sélecteur de site)
-// puis ouvre le tableau de bord. Nom, e-mail et mot de passe ne sont ni envoyés ni enregistrés.
+// Formulaire d'inscription : nom, numéro de téléphone, ville, mot de passe (POST /api/auth/inscription).
+// En cas de succès : session gardée, ville retenue pour le tableau de bord, puis page /bienvenue
+// (qui présente le bot Telegram).
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { getSites } from '@/lib/api'
+import { useState } from 'react'
+import { ErreurApi, getSites, inscrire } from '@/lib/api'
 import { SITE_PAR_DEFAUT, useSiteChoisi } from '@/lib/site-choisi'
 import { useApi } from '@/lib/use-api'
 import ChampMotDePasse from './ChampMotDePasse'
-import { AvisAuthentification, CLASSE_BOUTON_PRINCIPAL, CLASSE_CHAMP, Etiquette } from './formulaire'
+import { AIDE_TELEPHONE, CLASSE_BOUTON_PRINCIPAL, CLASSE_CHAMP, Etiquette, MessageErreur } from './formulaire'
 
 export default function FormInscription() {
   const router = useRouter()
   const [siteId, choisir] = useSiteChoisi()
   const sites = useApi(getSites, 'sites')
+  const [envoi, setEnvoi] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
 
   return (
     <div className="flex flex-col gap-6">
       <form
         className="flex flex-col gap-5"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
-          const site = new FormData(e.currentTarget).get('site')
-          if (typeof site === 'string' && site) choisir(site)
-          router.push('/tableau-de-bord')
+          const champs = new FormData(e.currentTarget)
+          const texte = (nom: string) => String(champs.get(nom) ?? '')
+          const site = texte('site')
+          setErreur(null)
+          setEnvoi(true)
+          try {
+            await inscrire({ nom: texte('nom'), telephone: texte('telephone'), motDePasse: texte('motDePasse'), ...(site ? { siteId: site } : {}) })
+            if (site) choisir(site)
+            router.push('/bienvenue')
+          } catch (err) {
+            setErreur(err instanceof ErreurApi ? err.message : 'Une erreur inattendue est survenue. Réessayez.')
+            setEnvoi(false)
+          }
         }}
       >
         <div className="flex flex-col gap-2">
           <Etiquette htmlFor="inscription-nom">Nom complet</Etiquette>
-          <input id="inscription-nom" name="nom" type="text" required autoComplete="name" placeholder="Prénom Nom" className={CLASSE_CHAMP} />
+          <input id="inscription-nom" name="nom" type="text" required minLength={2} maxLength={60} autoComplete="name" placeholder="Prénom Nom" className={CLASSE_CHAMP} />
         </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Etiquette htmlFor="inscription-email">Adresse e-mail</Etiquette>
-            <input id="inscription-email" name="email" type="email" required autoComplete="email" placeholder="vous@exemple.ga" className={CLASSE_CHAMP} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Etiquette htmlFor="inscription-tel">Téléphone (facultatif)</Etiquette>
-            <input id="inscription-tel" name="telephone" type="tel" autoComplete="tel" placeholder="+241 …" className={CLASSE_CHAMP} />
-          </div>
+        <div className="flex flex-col gap-2">
+          <Etiquette htmlFor="inscription-tel">Numéro de téléphone</Etiquette>
+          <input
+            id="inscription-tel"
+            name="telephone"
+            type="tel"
+            inputMode="tel"
+            required
+            autoComplete="tel"
+            placeholder="077 12 34 56"
+            aria-describedby="inscription-tel-aide"
+            className={CLASSE_CHAMP}
+          />
+          <p id="inscription-tel-aide" className="m-0 text-[13px] leading-relaxed text-ardoise">
+            {AIDE_TELEPHONE}. Utilisez le numéro de votre compte Telegram : vous pourrez aussi poser vos questions au bot.
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <Etiquette htmlFor="inscription-site">Site le plus proche de vos champs</Etiquette>
@@ -73,8 +93,9 @@ export default function FormInscription() {
           <input type="checkbox" name="accord" required className="mt-1 size-5 shrink-0 cursor-pointer accent-cnx" />
           J&apos;ai compris que S&apos;STACK donne des repères à partir des données NASA, à confirmer sur le terrain, et non des garanties de récolte.
         </label>
-        <button type="submit" className={CLASSE_BOUTON_PRINCIPAL}>
-          Créer mon compte
+        <MessageErreur message={erreur} />
+        <button type="submit" disabled={envoi} className={CLASSE_BOUTON_PRINCIPAL}>
+          {envoi ? 'Création du compte…' : 'Créer mon compte'}
         </button>
       </form>
 
@@ -84,8 +105,6 @@ export default function FormInscription() {
           Se connecter
         </Link>
       </p>
-
-      <AvisAuthentification />
     </div>
   )
 }

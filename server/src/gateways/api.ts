@@ -1,5 +1,5 @@
 // API Gateway : les routes /api/... lues par le front-end (contrat dans src/types/api.ts).
-// Phase 1 : lecture des données NASA (santé, sites, aperçu, fiche).
+// Données NASA en accès libre ; l'agent (/conseil, /voix) et l'historique demandent un compte (gateways/auth.ts).
 import { getConnInfo } from '@hono/node-server/conninfo'
 import { Hono, type Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -11,12 +11,13 @@ import { getClimatologie, getQuotidien, type Jour } from '../context/nasa-power.
 import { SITES } from '../context/sites.js'
 import { enregistrerConseil, listerConseils } from '../db/supabase.js'
 import type { ApercuSite, Conseil, DemandeConseil, FicheComplete, PointPluie, ReponseAgent, Site } from '../types/api.js'
+import { exigerCompte, routesAuth, type VariablesAuth } from './auth.js'
 import { autoriserAppel, premierMessage, SchemaDemandeConseil } from './guardrails.js'
 import { transcrire } from './voice.js'
 
 const VERSION = '0.1.0'
 
-export const api = new Hono()
+export const api = new Hono<VariablesAuth>()
 
 /** Erreur 400 avec un message clair, renvoyée en { erreur } par le gestionnaire global. */
 function requeteInvalide(message: string): never {
@@ -130,24 +131,27 @@ function verifierRythme(c: Context): void {
 }
 
 /** Valide la demande, interroge l'agent, enregistre le conseil (sans bloquer la réponse si Supabase échoue). */
-async function traiterDemande(brute: unknown, transcription?: string): Promise<ReponseAgent> {
+async function traiterDemande(utilisateurId: string, brute: unknown, transcription?: string): Promise<ReponseAgent> {
   const resultat = SchemaDemandeConseil.safeParse(brute)
   if (!resultat.success) requeteInvalide(premierMessage(resultat.error))
   const demande: DemandeConseil = resultat.data
   const reponse: ReponseAgent = { ...(await repondreClimat(demande)), ...(transcription ? { transcription } : {}) }
-  const conseilId = await enregistrerConseil(demande, reponse, demande.canal ?? 'web')
+  const conseilId = await enregistrerConseil(demande, reponse, demande.canal ?? 'web', utilisateurId)
   return conseilId ? { ...reponse, conseilId } : reponse
 }
 
-api.post('/conseil', async (c) => {
+// Inscription, connexion et profil : /api/auth/...
+api.route('/auth', routesAuth(adresseIp))
+
+api.post('/conseil', exigerCompte, async (c) => {
   verifierRythme(c)
   const corps: unknown = await c.req.json().catch(() => requeteInvalide('Le corps de la requête doit être du JSON.'))
-  return c.json<ReponseAgent>(await traiterDemande(corps))
+  return c.json<ReponseAgent>(await traiterDemande(c.get('utilisateurId'), corps))
 })
 
 const TAILLE_MAX_AUDIO = 10 * 1024 * 1024 // 10 Mo
 
-api.post('/voix', async (c) => {
+api.post('/voix', exigerCompte, async (c) => {
   verifierRythme(c)
   const formulaire = await c.req.parseBody().catch(() => requeteInvalide('Formulaire attendu (multipart/form-data).'))
   const audio = formulaire['audio']
@@ -168,6 +172,7 @@ api.post('/voix', async (c) => {
 
   return c.json<ReponseAgent>(
     await traiterDemande(
+      c.get('utilisateurId'),
       {
         lat: nombre('lat'),
         lon: nombre('lon'),
@@ -181,10 +186,11 @@ api.post('/voix', async (c) => {
   )
 })
 
-api.get('/conseils', async (c) => {
+// L'historique du producteur connecté uniquement
+api.get('/conseils', exigerCompte, async (c) => {
   const limite = z.coerce.number().int().min(1).max(50).catch(20).parse(c.req.query('limit') ?? 20)
   try {
-    return c.json<Conseil[]>(await listerConseils(limite))
+    return c.json<Conseil[]>(await listerConseils(c.get('utilisateurId'), limite))
   } catch (erreur) {
     console.error('[api]', erreur)
     throw new HTTPException(503, { message: 'L\'historique des conseils est momentanément indisponible.' })

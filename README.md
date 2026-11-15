@@ -54,8 +54,10 @@ Les **vraies valeurs** des clés (Groq, Gemini, Supabase, Telegram) sont envoyé
 | `GROQ_REASONING_EFFORT` | `low` par défaut : économise le quota gratuit |
 | `GROQ_STT_MODEL` | Transcription des messages vocaux (`whisper-large-v3`) |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | LLM de secours si Groq sature (`gemini-3.1-flash-lite`) |
+| `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOIX` | Facultatifs : voix des notes vocales du bot (`gemini-3.8-flash-lite-tts`, voix `Charon` par défaut) |
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Base de données (historique des conseils) |
 | `TELEGRAM_BOT_TOKEN` | Bot Telegram ; sans lui, le serveur démarre quand même |
+| `JWT_SECRET` | Signe les jetons de connexion (au moins 32 caractères, **chacun génère le sien**) : `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
 | `PORT`, `FRONTEND_URL` | `3001` et `http://localhost:3000` |
 
 ### Étape 2 : lancer (deux terminaux)
@@ -90,6 +92,7 @@ Space_app/
 │       ├── types/api.ts       ⭐ CONTRAT D'API : les types partagés avec le front
 │       ├── gateways/
 │       │   ├── api.ts         les routes HTTP (/api/...)
+│       │   ├── auth.ts        comptes : inscription, connexion, jeton, middleware exigerCompte
 │       │   ├── llm.ts         accès aux LLM : Groq, puis Gemini en secours
 │       │   ├── voice.ts       transcription vocale (Whisper de Groq)
 │       │   └── guardrails.ts  garde-fous : entrées (zod), limite d'appels, filtre de sortie
@@ -103,7 +106,9 @@ Space_app/
 │       │   └── construire-contexte.ts  assemblage du message envoyé au LLM
 │       ├── agents/climat.ts   l'agent climat : contexte → LLM → filtre
 │       ├── bot/telegram.ts    le bot Telegram (grammY)
+│       ├── auth/              empreinte des mots de passe (scrypt), numéros gabonais
 │       ├── db/supabase.ts     enregistrement et lecture des conseils
+│       ├── db/utilisateurs.ts comptes des producteurs
 │       └── scripts/           outils en ligne de commande (voir section 8)
 ├── web/               Site Next.js 16 + Tailwind 4 (guide détaillé : web/FRONTEND.md)
 ├── knowledge/         Ce que l'agent « sait » (en Markdown, modifiable sans coder)
@@ -111,7 +116,7 @@ Space_app/
 │   ├── fiches/                  calendrier des cultures, rotations, seuils, sols du Gabon
 │   ├── data/soilgrids-sites.json  valeurs de sol des 8 sites
 │   └── tests/questions-test.md  les 11 questions de test
-├── supabase/migrations/001_schema.sql   la table des conseils
+├── supabase/migrations/   001 : table des conseils ; 002 : comptes des producteurs
 ├── docs/              Brief, ressources, prompt de liaison front/back, résultats de tests
 └── screenshot/        Captures de toutes les pages (ordinateur et téléphone)
 ```
@@ -125,6 +130,8 @@ Les fichiers `server/src/agents/rotation.ts`, `sols.ts`, `supervisor.ts` et `gat
 ```
 Question (web ou Telegram, texte ou voix)
    │  voix → transcription Whisper (Groq)
+   ▼
+Compte obligatoire (jeton sur le web, compte relié sur Telegram)
    ▼
 Garde-fous d'entrée : position au Gabon, question de 1 à 1000 caractères, 10 questions par minute et par IP
    ▼
@@ -164,11 +171,40 @@ Base : `http://localhost:3001/api`. Les types sont dans **`server/src/types/api.
 | GET | `/apercu` | verdict + pluie 30 j de chaque ville (une ville en erreur renvoie `verdict: null`) |
 | GET | `/fiche/:siteId` | fiche complète d'une ville + série de pluie sur 30 jours |
 | GET | `/fiche?lat=&lon=&nom=` | fiche d'une position quelconque au Gabon |
-| POST | `/conseil` | `{ lat, lon, question, nomLieu?, culture?, canal? }` → réponse de l'agent |
-| POST | `/voix` | formulaire avec un fichier audio (10 Mo au maximum) + lat/lon → transcription + réponse |
-| GET | `/conseils?limit=20` | derniers conseils enregistrés (1 à 50), du plus récent au plus ancien |
+| POST | `/auth/inscription` | `{ nom, telephone, motDePasse, siteId? }` → `{ jeton, utilisateur }` (201) |
+| POST | `/auth/connexion` | `{ telephone, motDePasse }` → `{ jeton, utilisateur }` |
+| GET | `/auth/moi` 🔒 | profil du producteur connecté |
+| POST | `/conseil` 🔒 | `{ lat, lon, question, nomLieu?, culture?, canal? }` → réponse de l'agent |
+| POST | `/voix` 🔒 | formulaire avec un fichier audio (10 Mo au maximum) + lat/lon → transcription + réponse |
+| GET | `/conseils?limit=20` 🔒 | conseils **du producteur connecté** (1 à 50), du plus récent au plus ancien |
+
+🔒 = compte obligatoire : en-tête `Authorization: Bearer <jeton>`. Sans jeton ou avec un jeton expiré : erreur 401.
 
 Identifiants des villes : `tchibanga`, `mouila`, `lambarene`, `libreville`, `oyem`, `makokou`, `koulamoutou`, `franceville`.
+
+### Comptes des producteurs (téléphone + mot de passe, sans SMS)
+
+- **Il faut un compte pour utiliser l'agent** (web et Telegram). Les données NASA (`/sites`, `/apercu`, `/fiche`) restent libres.
+- **Numéro** : deux écritures seulement, `077 12 34 56` ou `+241 77 12 34 56` (espaces facultatifs, `+241 077…` toléré). Tout le reste (tirets, points, chiffres manquants, `00241…`) est refusé avec « Ce numéro est mal écrit. Écrivez-le comme ceci : 077 12 34 56 ou +241 77 12 34 56. » Le serveur range le numéro sous une seule forme : `+241077123456`. Conseil pour le formulaire : `type="tel"`, `inputMode="tel"`, `placeholder="077 12 34 56"`.
+- **Mot de passe** : 8 à 72 caractères, gardé sous forme d'empreinte scrypt (jamais en clair).
+- **Jeton** valable 30 jours. Au-delà, l'API répond 401 et il faut se reconnecter.
+- **Sécurité** : 10 essais de connexion ou d'inscription par quart d'heure et par adresse ; le message d'erreur ne dit pas si le numéro existe.
+- **Erreurs à afficher telles quelles** (champ `erreur`) : 400 champ invalide, 401 identifiants incorrects, 409 numéro déjà inscrit, 429 trop d'essais, 503 base indisponible.
+
+**Côté site** : les formulaires `/inscription` et `/connexion` sont branchés. Après l'inscription, la page `/bienvenue` présente le bot Telegram. L'espace agriculteur est protégé par `components/auth/GardeSession.tsx` (renvoi vers `/connexion?suite=…`). « Se déconnecter » est en bas du menu. Les fonctions utiles sont dans `web/src/lib/` :
+
+```ts
+import { connecter, inscrire, getMoi, deconnecter } from '@/lib/api'
+import { utilisateurConnecte, EVENEMENT_SESSION } from '@/lib/session'
+
+await inscrire({ nom, telephone, motDePasse, siteId })   // enregistre la session
+await connecter({ telephone, motDePasse })                 // idem
+// Ensuite, demanderConseil, envoyerVocal et listerConseils envoient le jeton tout seuls.
+// Une erreur ErreurApi porte .message (prêt à afficher) et .statut (401, 409…).
+// Si le serveur répond 401, la session est effacée : renvoyer vers /connexion.
+```
+
+**Faire connaître le bot Telegram** : le nom et le lien sont dans `web/src/lib/telegram.ts` (`@sstack_agri_bot`, `https://t.me/sstack_agri_bot`). Le bot est présenté sur `/bienvenue`, dans la carte Telegram du tableau de bord (`components/telegram/CarteTelegram.tsx` : 3 étapes, puis « Telegram relié » une fois le compte relié), dans la visite guidée, dans la réponse de Mbolo et sur la landing (appel à l'action et pied de page).
 
 **CORS :** le serveur accepte `FRONTEND_URL`, ainsi que `localhost`, `127.0.0.1` et les adresses du réseau local (192.168.x.x, 10.x.x.x), quel que soit le port.
 
@@ -195,8 +231,10 @@ Le guide complet est dans **[web/FRONTEND.md](web/FRONTEND.md)** (pages, composa
 
 Le bot démarre avec le serveur (`npm run dev` dans `server/`) si `TELEGRAM_BOT_TOKEN` est rempli. Il fonctionne en *long polling* : aucune URL publique n'est nécessaire en local.
 
-1. `/start` affiche des boutons : « Envoyer ma position » ou le choix d'une des 8 villes.
-2. On pose une question par écrit, ou on envoie un **message vocal**. Le bot répond d'abord « 🎙️ J'ai compris : « … » », puis donne le conseil.
+1. **Relier son compte** (une seule fois) : le producteur crée son compte sur le site, puis touche « 📱 Partager mon numéro » dans le bot. Le bot retrouve le compte qui a ce numéro et le relie à Telegram. Sans compte relié, le bot n'accepte aucune question.
+2. `/start` affiche des boutons : « Partager ma position » ou le choix d'une des 8 villes.
+3. On pose sa question **par écrit** (réponse écrite) ou **par message vocal** (réponse en note vocale seulement, voix Gemini convertie en OGG/Opus avec ffmpeg-static : `server/src/gateways/synthese.ts` ; si la voix échoue, la réponse arrive par écrit).
+4. **Le lieu n'est pas redemandé** : le bot prend la ville citée dans la question (« … à Libreville »), sinon la position ou la ville choisie dans la conversation, sinon la ville du compte. Toucher une ville la garde comme ville par défaut du compte.
 
 ⚠️ **Un seul serveur à la fois** doit tourner avec le même jeton Telegram. Sinon, Telegram renvoie une erreur 409 et un des deux bots s'arrête.
 
@@ -204,8 +242,11 @@ Le bot démarre avec le serveur (`npm run dev` dans `server/`) si `TELEGRAM_BOT_
 
 ## 7. Base de données Supabase
 
-- Une seule table, `public.conseils` : date, canal (web ou telegram), lieu, question, réponse, fournisseur et modèle du LLM, fiche en JSON.
-- **À faire une fois :** exécuter `supabase/migrations/001_schema.sql` dans le SQL Editor de Supabase. Tant que ce n'est pas fait, les conseils ne sont pas enregistrés (le serveur l'écrit dans son journal) et la page Historique affiche une erreur.
+- `public.conseils` : date, canal (web ou telegram), producteur (`utilisateur_id`), lieu, question, réponse, fournisseur et modèle du LLM, fiche en JSON.
+- `public.utilisateurs` : nom, numéro (unique), ville, empreinte du mot de passe, identifiant Telegram relié.
+- **Migrations** : chaque changement de tables est un fichier numéroté dans `supabase/migrations/`, à exécuter **dans l'ordre** dans le SQL Editor de Supabase (New query → coller → Run). On ne crée pas de table à la main.
+  - `001_schema.sql` : table des conseils (exécutée) ;
+  - `002_utilisateurs.sql` : comptes des producteurs. Tant qu'elle n'est pas exécutée, l'inscription répond « Les comptes sont momentanément indisponibles ».
 - La RLS est activée, sans règle publique : seul le serveur, avec la clé `service_role`, lit et écrit. **Cette clé ne va jamais dans `web/`.**
 
 ---
@@ -263,7 +304,9 @@ Le dépôt contient un fichier **[CLAUDE.md](CLAUDE.md)** à la racine. Claude C
 | La carte reste grise ou affiche « Worker failed to load » | Relancer `npm run dev` dans `web/` : il recopie le worker MapLibre. |
 | Port 3000 ou 3001 déjà utilisé | Un ancien `npm run dev` tourne encore : le fermer (Ctrl+C), ou arrêter le processus `node`. |
 | `[LLM] Groq indisponible (quota dépassé (429))` dans le journal | C'est normal quand on enchaîne les questions : Gemini prend le relais automatiquement. |
-| `Could not find the table 'public.conseils'` | Exécuter `supabase/migrations/001_schema.sql` (section 7). |
+| `Could not find the table 'public.conseils'` ou `'public.utilisateurs'` | Exécuter les migrations de `supabase/migrations/` dans l'ordre (section 7). |
+| L'agent répond « Connectez-vous pour utiliser l'agent » | Normal : il faut un compte. Se connecter (ou créer un compte), puis réessayer. |
+| L'inscription répond « comptes momentanément indisponibles » | `JWT_SECRET` absent de `server/.env`, ou migration 002 pas exécutée : voir le journal du serveur. |
 | `fetch failed` vers NASA POWER | Le serveur réessaie une fois tout seul. Si ça continue, vérifier la connexion Internet. |
 | Bot Telegram : erreur 409 Conflict | Deux serveurs tournent avec le même jeton : en garder un seul. |
 
@@ -279,8 +322,8 @@ Le dépôt contient un fichier **[CLAUDE.md](CLAUDE.md)** à la racine. Claude C
 - Visite guidée et infobulles pour les producteurs
 
 **En cours ou à faire**
-- **Inscription et connexion par numéro de téléphone** (côté serveur). Les formulaires existent mais ne sont pas encore reliés au serveur.
-- Exécuter la migration Supabase, puis tester l'historique et le bot Telegram de bout en bout
+- **Comptes** : terminé (inscription, connexion, espace agriculteur protégé, liaison Telegram, bot présenté sur le site). Reste : récupération du mot de passe oublié (aujourd'hui, l'équipe remet le compte à zéro à la main dans Supabase).
+- Exécuter `002_utilisateurs.sql`, puis tester le bot Telegram de bout en bout
 - Pages « à venir » du menu (météo, sols, rotation…), agents Rotation et Sols, superviseur
 - Synthèse vocale des réponses, déploiement (Render pour le serveur, Vercel pour le site, webhook Telegram)
 

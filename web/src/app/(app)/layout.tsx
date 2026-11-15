@@ -2,7 +2,9 @@
 // Ordinateur (≥ 1024 px) : sidebar « Farm Intelligence » fixe à gauche + contenu large et centré.
 // Téléphone et tablette : contenu + barre d'onglets en bas, dont « Menu » ouvre la sidebar en tiroir.
 // Visite guidée : lancée seule à la première visite du tableau de bord (components/aide).
+// Compte obligatoire : GardeSession renvoie vers /connexion si personne n'est connecté.
 import VisiteGuidee from '@/components/aide/VisiteGuidee'
+import GardeSession from '@/components/auth/GardeSession'
 import Sidebar from '@/components/navigation/Sidebar'
 import TabBar from '@/components/TabBar'
 
@@ -12,7 +14,7 @@ export default function LayoutApplication({ children }: { children: React.ReactN
       <Sidebar />
       <div className="lg:pl-72">
         <div id="contenu" className="mx-auto w-full max-w-[1200px] px-4 pt-6 pb-28 sm:px-6 md:px-8 md:pt-10 lg:px-10 lg:pb-12">
-          {children}
+          <GardeSession>{children}</GardeSession>
         </div>
       </div>
       <TabBar />

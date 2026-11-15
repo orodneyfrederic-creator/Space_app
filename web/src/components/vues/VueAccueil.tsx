@@ -12,6 +12,7 @@ import { Infobulle } from '../aide/Infobulle'
 import CarteParcelles from '../carte/CarteParcelles'
 import { SunIcon } from '../icons'
 import SelecteurSite from '../SelecteurSite'
+import CarteTelegram from '../telegram/CarteTelegram'
 import { BadgeVerdict, Chargement, EnTetePage, Erreur, EtiquetteNasa, Panneau, Tuile } from '../ui/elements'
 
 export default function VueAccueil() {
@@ -95,6 +96,7 @@ export default function VueAccueil() {
               Que planter cette saison ?
             </Link>
           </div>
+          <CarteTelegram />
         </div>
 
         {/* Colonne droite : mini-carte + sites suivis */}

@@ -25,7 +25,7 @@ const SOLUTIONS: readonly Solution[] = [
     icone: <IcoBulle taille={22} />,
     titre: `${NOM_AGENT}, l’agent conseiller`,
     resume: 'Il vous guide dans l’application et répond à vos questions.',
-    detail: `${NOM_AGENT} vous oriente vers la bonne page et répond aux questions rapides. Pour une question agricole, il passe la main à l’agent S’STACK, qui lit la fiche de votre site — pluie des 7 et 30 derniers jours, écart à la normale, humidité du sol, démarrage de la saison — et vous répond en français simple, ici ou sur Telegram.`,
+    detail: `${NOM_AGENT} vous oriente vers la bonne page et répond aux questions rapides. Pour une question agricole, il passe la main à l’agent S’STACK, qui lit la fiche de votre site — pluie des 7 et 30 derniers jours, écart à la normale, humidité du sol, démarrage de la saison — et vous répond en français simple, ici ou sur Telegram (bot @sstack_agri_bot).`,
     lien: { agent: true, label: `Parler à ${NOM_AGENT}` },
     photo: PHOTOS.numerique,
     alt: 'Une agricultrice consulte un ordinateur portable au milieu de son champ.',
