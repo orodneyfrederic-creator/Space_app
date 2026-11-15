@@ -21,13 +21,13 @@ cd server && npx tsx src/scripts/tester-agent.ts   # 11 questions → docs/resul
 
 ## Architecture (l'essentiel)
 - `server/src/types/api.ts` : **contrat d'API unique**, copié À L'IDENTIQUE dans `web/src/lib/types.ts`. On modifie les deux ensemble.
-- `server/src/gateways/api.ts` : routes Hono (`/api/sante`, `/sites`, `/apercu`, `/fiche/:id`, `/fiche?lat&lon`, `POST /conseil`, `POST /voix`, `/conseils`).
+- `server/src/gateways/api.ts` : routes Hono (`/api/sante`, `/sites`, `/apercu`, `/fiche/:id`, `/fiche?lat&lon`, `POST /conseil`, `POST /voix`, `/conseils`). Sols : `gateways/sols.ts` monté sur `/api/sols` (`/humidite/:siteId` libre ; `/analyses` et `/amendements` en GET/POST avec compte).
 - `server/src/gateways/auth.ts` : comptes (`POST /api/auth/inscription`, `POST /api/auth/connexion`, `GET /api/auth/moi`), jeton JWT HS256 de 30 jours (`JWT_SECRET`), middleware `exigerCompte` sur `/conseil`, `/voix`, `/conseils`. Mots de passe scrypt (`auth/mot-de-passe.ts`), numéros normalisés en `+2410XXXXXXXX` (`auth/telephone.ts`). Telegram : compte relié par « Partager mon numéro ». Côté site : `web/src/lib/session.ts` + `inscrire`/`connecter` dans `lib/api.ts`.
 - `server/src/gateways/llm.ts` : Groq (`openai/gpt-oss-120b`, `reasoning_effort` low) puis Gemini (`gemini-3.1-flash-lite`) sur 429, délai dépassé ou réponse vide. Les deux passent par le SDK `openai`.
 - `server/src/gateways/guardrails.ts` : zod (bornes du Gabon), 10 questions par minute et par IP, `filtrerSortie` (texte simple, pas de dose, pas de promesse de rendement, 5 phrases au maximum).
 - `server/src/context/construire-contexte.ts` : UN SEUL message système (skill + fiches + fiche parcelle), puis le rappel des règles et la question dans `<question_producteur>`.
 - `knowledge/` : comportement de l'agent en Markdown (`skills/climat/SKILL.md`, `fiches/`). On le modifie avant de toucher au code.
-- `server/src/db/` : tables `public.conseils` et `public.utilisateurs` (migrations numérotées dans `supabase/migrations/`, exécutées à la main dans le SQL Editor), clé service_role côté serveur seulement.
+- `server/src/db/` : tables `public.conseils`, `public.utilisateurs` et, pour la page `/soil`, `soil_*` (`db/sols.ts`, bucket privé `sols-documents`) (migrations numérotées dans `supabase/migrations/`, exécutées à la main dans le SQL Editor), clé service_role côté serveur seulement.
 - `web/` : Next.js 16 + Tailwind 4, guide détaillé dans `web/FRONTEND.md`. Pages de l'espace agriculteur dans `app/(app)/`. Agent flottant Mbolo dans `components/agent/`. Visite guidée et infobulles dans `components/aide/` (cibles `data-visite="…"`, textes dans `lib/explications.ts`).
 
 ## Règles (obligatoires)

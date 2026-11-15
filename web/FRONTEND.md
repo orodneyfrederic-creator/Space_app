@@ -42,6 +42,7 @@ web/src/
     (app)/cultures/           /cultures             repères et questions par culture
     (app)/assistant/          /assistant            MODULE 06 assistant intelligent (texte, micro, photo, actions à confirmer)
     (app)/discuter/           /discuter             parler à l'agent (texte + micro)
+    (app)/soil/               /soil                 intelligence des sols (?onglet=bilan|analyses|humidite|amendements)
     (app)/historique/         /historique           conseils donnés (web + Telegram)
   components/
     agent/                    ← Mbolo, l'agent flottant de toutes les pages (sur le modèle de Linky, CNX LINK) :
@@ -65,7 +66,17 @@ web/src/
     verdict.ts                ← couleurs des verdicts (charte S'STACK)
     cultures.ts               ← repères et questions par culture (page /cultures et landing)
     assistant.ts              ← module 06 : sources consultées, actions proposées, journal des actions
+    sols.ts                   ← /soil : libellés, unités, comparaison des analyses, bilan des données manquantes
 ```
+
+## Intelligence des sols (`/soil`)
+
+- **Bilan** : croise les analyses saisies, l'estimation SoilGrids, l'humidité et la pluie NASA, les amendements ; signale ce qui manque (`bilanSol` dans `lib/sols.ts`). Bouton vers l'assistant avec une question qui contient seulement les valeurs mesurées.
+- **Analyses** : formulaire (parcelle libre, type de sol, date, méthode, pH, M.O., N, P, K avec unités, rapport de laboratoire) et tableau de comparaison dans le temps.
+- **Humidité** : graphique NASA POWER GWETROOT + normale du mois. NASA SMAP : à venir.
+- **Amendements** : formulaire et liste.
+- Règle : le pH et les nutriments viennent **uniquement** des analyses saisies ; SoilGrids est toujours affiché comme une estimation ; rien n'est déduit d'une image satellite.
+- Base : `supabase/migrations/004_sols.sql` (à exécuter après 002). PostGIS : prévu quand les parcelles auront un contour.
 
 ## Module 06 — Assistant intelligent (`/assistant`)
 
@@ -101,6 +112,9 @@ Source unique : `server/src/types/api.ts` (recopié dans `src/lib/types.ts`). Er
 | `POST /api/conseil` | Question écrite à l'agent |
 | `POST /api/voix` | Question vocale (`audio` webm, `lat`, `lon`, `nomLieu?`) |
 | `GET /api/conseils?limit=20` | Historique (Supabase) |
+| `GET /api/sols/humidite/:siteId` | Humidité du sol NASA POWER (GWETROOT), 60 jours, accès libre |
+| `GET /api/sols/analyses?siteId=` · `POST` (multipart) | Analyses de sol du producteur (+ rapport PDF/JPEG/PNG) |
+| `GET /api/sols/amendements?siteId=` · `POST` (JSON) | Amendements apportés (chaux, compost…) |
 
 ## Mouvements et survols (landing)
 
