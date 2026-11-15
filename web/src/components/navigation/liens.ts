@@ -14,7 +14,7 @@ export const LIENS: readonly Lien[] = [
   { href: '/tableau-de-bord', label: 'Accueil', icone: HomeIcon, correspond: ['/tableau-de-bord'] },
   { href: '/carte', label: 'Carte', icone: MapIcon, correspond: ['/carte', '/parcelles'] },
   { href: '/cultures', label: 'Cultures', icone: SproutIcon, correspond: ['/cultures'] },
-  { href: '/discuter', label: 'Agent', icone: ChatIcon, correspond: ['/discuter', '/assistant', '/historique'] },
+  { href: '/assistant', label: 'Agent', icone: ChatIcon, correspond: ['/assistant', '/discuter', '/historique'] },
 ]
 
 export function estActif(chemin: string, correspond: readonly string[]): boolean {
