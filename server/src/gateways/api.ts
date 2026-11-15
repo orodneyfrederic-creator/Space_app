@@ -13,6 +13,7 @@ import { enregistrerConseil, listerConseils } from '../db/supabase.js'
 import type { ApercuSite, Conseil, DemandeConseil, FicheComplete, PointPluie, ReponseAgent, Site } from '../types/api.js'
 import { exigerCompte, routesAuth, type VariablesAuth } from './auth.js'
 import { autoriserAppel, premierMessage, SchemaDemandeConseil } from './guardrails.js'
+import { routesSols } from './sols.js'
 import { transcrire } from './voice.js'
 
 const VERSION = '0.1.0'
@@ -142,6 +143,9 @@ async function traiterDemande(utilisateurId: string, brute: unknown, transcripti
 
 // Inscription, connexion et profil : /api/auth/...
 api.route('/auth', routesAuth(adresseIp))
+
+// Intelligence des sols : analyses, amendements, humidité NASA (gateways/sols.ts)
+api.route('/sols', routesSols)
 
 api.post('/conseil', exigerCompte, async (c) => {
   verifierRythme(c)

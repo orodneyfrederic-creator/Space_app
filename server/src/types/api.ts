@@ -75,3 +75,66 @@ export type ReponseAuth = {
   jeton: string // valable 30 jours
   utilisateur: Utilisateur
 }
+
+// ── Intelligence des sols (/soil) ──
+// Analyses saisies par le producteur (laboratoire ou kit), amendements apportés, humidité NASA du site.
+// Routes : GET /api/sols/humidite/:siteId (libre) ; GET et POST /api/sols/analyses, /api/sols/amendements (compte exigé).
+// Les valeurs chimiques viennent UNIQUEMENT des analyses saisies : jamais d'une image satellite.
+
+export type TypeSol = 'sableux' | 'sablo_argileux' | 'argilo_sableux' | 'argileux' | 'limoneux' | 'lateritique' | 'hydromorphe' | 'autre'
+
+export type MethodeAnalyse = 'laboratoire' | 'kit_terrain' | 'autre'
+
+export type ProprieteSol = 'ph' | 'matiere_organique' | 'azote' | 'phosphore' | 'potassium'
+
+/** Unités acceptées pour chaque propriété (le serveur refuse les autres). */
+export type UniteSol = 'pH' | '%' | 'g/kg' | 'mg/kg' | 'ppm' | 'cmol/kg'
+
+export type MesureSol = { propriete: ProprieteSol; valeur: number; unite: UniteSol }
+
+export type AnalyseSol = {
+  id: string
+  siteId: string
+  parcelle: string | null // nom libre donné par le producteur (« champ du bas »)
+  dateAnalyse: string // AAAA-MM-JJ
+  methode: MethodeAnalyse
+  laboratoire: string | null
+  typeSol: TypeSol | null
+  mesures: MesureSol[] // seulement ce qui a été mesuré
+  document: { nom: string; url: string | null } | null // url signée valable 1 h
+  creeLe: string // ISO
+}
+
+/**
+ * POST /api/sols/analyses : formulaire multipart avec les champs
+ * siteId, parcelle?, dateAnalyse, methode, laboratoire?, typeSol?,
+ * mesures (texte JSON d'un MesureSol[]), document? (PDF, JPEG ou PNG, 10 Mo au maximum).
+ */
+export type DemandeAnalyseSol = Omit<AnalyseSol, 'id' | 'document' | 'creeLe'>
+
+export type TypeAmendement = 'chaux' | 'compost' | 'fumier' | 'engrais_mineral' | 'cendres' | 'paillage' | 'autre'
+
+export type Amendement = {
+  id: string
+  siteId: string
+  parcelle: string | null
+  date: string // AAAA-MM-JJ
+  type: TypeAmendement
+  produit: string | null // ex. « NPK 15-15-15 », « chaux agricole »
+  quantite: number | null
+  unite: string | null // ex. « kg », « sacs », « brouettes »
+  notes: string | null
+  creeLe: string // ISO
+}
+
+/** POST /api/sols/amendements (JSON) */
+export type DemandeAmendement = Omit<Amendement, 'id' | 'creeLe'>
+
+/** Humidité du sol au niveau des racines (indice NASA POWER GWETROOT, 0 = sec, 1 = saturé). */
+export type PointHumidite = { date: string; racines: number | null; normale: number | null }
+
+export type HumiditeSol = {
+  site: Site
+  source: string // ex. « NASA POWER (GWETROOT), modèle à environ 50 km »
+  points: PointHumidite[] // les 60 derniers jours
+}

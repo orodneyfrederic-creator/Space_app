@@ -73,9 +73,11 @@ export const RUBRIQUES: readonly Rubrique[] = [
     titre: 'Intelligence des sols',
     icone: IcoCouches,
     pages: [
-      aVenir('Analyse des sols', '/sols/analyse', 'Texture, acidité et matière organique de votre terre (SoilGrids).'),
+      { titre: 'Analyse des sols', href: '/soil', description: 'Vos analyses de sol, leur comparaison dans le temps et le bilan des données.', correspond: ['/soil'] },
       aVenir('Fertilité des sols', '/sols/fertilite', 'Ce que votre sol peut nourrir, et comment l’enrichir.'),
-      aVenir('Humidité', '/sols/humidite', 'L’humidité de la zone des racines, suivie par la NASA.'),
+      // Rubriques de la même page /soil : jamais « actives » seules (la page l'est déjà par « Analyse des sols »)
+      { titre: 'Humidité', href: '/soil?onglet=humidite', description: 'L’humidité de la zone des racines, suivie par la NASA.', correspond: [] },
+      { titre: 'Amendements', href: '/soil?onglet=amendements', description: 'Chaux, compost, fumier, engrais : ce que vous avez apporté au sol.', correspond: [] },
       aVenir('Recommandations', '/sols/recommandations', 'Les gestes conseillés pour protéger et améliorer votre sol.'),
     ],
   },

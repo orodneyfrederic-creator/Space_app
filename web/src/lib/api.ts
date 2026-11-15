@@ -1,6 +1,11 @@
 // Appels au serveur S'STACK (server/, Hono). Une fonction par route du contrat (lib/types.ts).
 import { effacerSession, enregistrerSession, lireJeton } from './session'
 import type {
+  Amendement,
+  AnalyseSol,
+  DemandeAmendement,
+  DemandeAnalyseSol,
+  HumiditeSol,
   ApercuSite,
   Conseil,
   DemandeConnexion,
@@ -114,3 +119,35 @@ export async function connecter(demande: DemandeConnexion): Promise<ReponseAuth>
 export const getMoi = () => appeler<Utilisateur>('/api/auth/moi')
 
 export const deconnecter = () => effacerSession()
+
+// ── Intelligence des sols (/soil) ──
+
+/** Humidité du sol des 60 derniers jours (NASA POWER), accès libre. */
+export const getHumiditeSol = (siteId: string) => appeler<HumiditeSol>(`/api/sols/humidite/${encodeURIComponent(siteId)}`)
+
+const filtreSite = (siteId?: string) => (siteId ? `?siteId=${encodeURIComponent(siteId)}` : '')
+
+export const listerAnalysesSol = (siteId?: string) => appeler<AnalyseSol[]>(`/api/sols/analyses${filtreSite(siteId)}`)
+
+/** Enregistre une analyse ; le document de laboratoire (PDF, JPEG, PNG, 10 Mo) est facultatif. */
+export function enregistrerAnalyseSol(demande: DemandeAnalyseSol, document?: File) {
+  const formulaire = new FormData()
+  formulaire.append('siteId', demande.siteId)
+  if (demande.parcelle) formulaire.append('parcelle', demande.parcelle)
+  formulaire.append('dateAnalyse', demande.dateAnalyse)
+  formulaire.append('methode', demande.methode)
+  if (demande.laboratoire) formulaire.append('laboratoire', demande.laboratoire)
+  if (demande.typeSol) formulaire.append('typeSol', demande.typeSol)
+  formulaire.append('mesures', JSON.stringify(demande.mesures))
+  if (document) formulaire.append('document', document, document.name)
+  return appeler<AnalyseSol>('/api/sols/analyses', { method: 'POST', body: formulaire })
+}
+
+export const listerAmendements = (siteId?: string) => appeler<Amendement[]>(`/api/sols/amendements${filtreSite(siteId)}`)
+
+export const enregistrerAmendement = (demande: DemandeAmendement) =>
+  appeler<Amendement>('/api/sols/amendements', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(demande),
+  })
