@@ -22,7 +22,7 @@ export default function VueCarte() {
       {apercu.statut === 'erreur' && <Erreur message={apercu.message} onReessayer={apercu.recharger} />}
       {apercu.statut === 'pret' && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6">
-          <CarteParcelles apercus={apercu.donnees} hauteur="h-[55vh] min-h-[320px] lg:h-[calc(100dvh-12rem)] lg:min-h-[70vh]" />
+          <CarteParcelles apercus={apercu.donnees} relief3d hauteur="h-[55vh] min-h-[320px] lg:h-[calc(100dvh-12rem)] lg:min-h-[70vh]" />
           <ul className="m-0 flex list-none flex-col gap-2 p-0 lg:max-h-[calc(100dvh-12rem)] lg:overflow-y-auto">
             {apercu.donnees.map((a) => (
               <li key={a.site.id}>
