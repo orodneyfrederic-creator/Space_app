@@ -6,6 +6,7 @@
 import { Bot, type Context, InputFile, Keyboard } from 'grammy'
 import { repondreClimat } from '../agents/climat.js'
 import { afficherTelephone, normaliserTelephoneTelegram } from '../auth/telephone.js'
+import { etatSolPosition, texteEtatSolTelegram } from '../context/etat-sol.js'
 import { SITES, type Site } from '../context/sites.js'
 import { enregistrerConseil } from '../db/supabase.js'
 import { changerSite, lierTelegram, trouverParTelegram, trouverParTelephone } from '../db/utilisateurs.js'
@@ -23,7 +24,7 @@ const lieux = new Map<number, Lieu>()
 // Compte S'STACK relié, par identifiant Telegram (simple cache : la base fait foi)
 const comptes = new Map<number, Utilisateur>()
 
-const BOUTON_POSITION = '📍 Partager ma position'
+const BOUTON_POSITION = '📍 Envoyer ma position'
 const BOUTON_NUMERO = '📱 Partager mon numéro'
 const MESSAGE_ERREUR = 'Désolé, je n\'arrive pas à répondre pour le moment. Réessayez dans quelques minutes.'
 const ADRESSE_SITE = process.env.FRONTEND_URL ?? 'http://localhost:3000'
@@ -208,7 +209,15 @@ export function creerBot(token: string): Bot {
       return
     }
     lieux.set(ctx.chat.id, { lat: latitude, lon: longitude, nomLieu: 'votre parcelle' })
-    await ctx.reply('📍 Position enregistrée. Posez maintenant votre question, par écrit ou par message vocal.')
+    // État du sol à cette position (3 couches, action par règles) ; si la NASA ne répond pas, la position reste enregistrée
+    let etat = ''
+    try {
+      etat = texteEtatSolTelegram(await avecIndicateur(ctx, 'texte', () => etatSolPosition(latitude, longitude)))
+    } catch (erreur) {
+      console.error('[telegram] état du sol indisponible :', erreur)
+      etat = '📍 Position enregistrée. (État du sol de la NASA indisponible pour le moment.)'
+    }
+    await ctx.reply(`${etat}\n\nPosez maintenant votre question, par écrit ou par message vocal.`)
   })
 
   bot.on('message:voice', async (ctx) => {

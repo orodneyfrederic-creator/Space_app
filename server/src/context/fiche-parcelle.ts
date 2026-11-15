@@ -19,6 +19,7 @@ import {
   plusLongueSecheresse,
   pluieCumulee,
 } from './indicateurs.js'
+import { construireEtatSol, ligneContexteEtatSol } from './etat-sol.js'
 import { solLePlusProche } from './sols.js'
 
 export type OptionsFiche = {
@@ -88,6 +89,7 @@ export function construireFiche(lat: number, lon: number, donneesJour: Jour[], c
     `Jours secs (moins de 1 mm) sur les 14 derniers jours : ${secs14} (plus longue suite sèche : ${nbJours(secheresse14)})`,
     // L'indice brut (0 à 1) reste dans `donnees` : le texte ne donne que l'état, compréhensible par le producteur.
     `Humidité du sol au niveau des racines : ${sol === null ? 'inconnue' : etat} (habituellement pour ce mois : ${etatSol(solNormal ?? null)})`,
+    ligneContexteEtatSol(construireEtatSol(lat, lon, donneesJour, climato, aujourdhui)),
     `Température maximale moyenne (7 derniers jours) : ${fr(tmax7)} °C`,
     `Grande saison des pluies : ${ligneSaison}`,
     `Mois habituellement les plus secs ici (normales NASA) : ${secs.join(', ')} → sol nu à protéger`,
