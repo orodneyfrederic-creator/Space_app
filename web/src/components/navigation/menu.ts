@@ -73,6 +73,7 @@ export const QUOTIDIEN: readonly EntreeDirecte[] = [
   { titre: 'Carte des sites', href: '/carte', description: 'Les sites suivis et leur verdict de semis, en 2D ou en 3D.', correspond: ['/carte', '/parcelles'], icone: IcoCarte, profils: ['conseiller', 'organisation'] },
   // Producteur : son sol en accès direct (les autres profils le trouvent dans « Mes données »)
   { titre: 'Mon sol', href: '/soil', description: 'Vos analyses de sol, l’humidité suivie par la NASA et vos amendements.', correspond: ['/soil'], icone: IcoCouches, profils: ['producteur'] },
+  { titre: 'Mes graphiques', href: '/graphiques', description: 'La pluie, l’eau dans la terre et la chaleur des 30 derniers jours, expliquées simplement.', icone: IcoGraphique },
   { titre: 'Mes cultures', href: '/cultures', description: 'Repères et questions par culture.', icone: IcoGraine },
   { titre: 'Mes conseils', href: '/historique', description: 'Les conseils déjà donnés, sur le web et Telegram.', icone: IcoHorloge },
 ]

@@ -12,7 +12,6 @@ import { Infobulle } from '../aide/Infobulle'
 import BandeauPosition from '../sol/BandeauPosition'
 import CarteAction, { SqueletteAction } from '../sol/CarteAction'
 import CoupeSol, { SqueletteCoupe } from '../sol/CoupeSol'
-import EvolutionSol from '../sol/EvolutionSol'
 import { Erreur } from '../ui/elements'
 import BandeauTelegram from './BandeauTelegram'
 import SelecteurProfilDemo from './SelecteurProfilDemo'
@@ -114,17 +113,18 @@ export default function AccueilProducteur() {
       </div>
 
       {etat && (
-        <details className="group rounded-3xl border border-line bg-surface">
-          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 font-display text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
-            Voir les 30 derniers jours en graphiques
-            <span aria-hidden="true" className="text-muted transition-transform duration-300 group-open:rotate-180 motion-reduce:transition-none">
-              ⌄
-            </span>
-          </summary>
-          <div className="border-t border-line-soft px-4 py-5 sm:px-5">
-            <EvolutionSol etat={etat} />
-          </div>
-        </details>
+        <Link
+          href="/graphiques"
+          className="group flex items-center justify-between gap-4 rounded-3xl border border-line bg-surface px-5 py-4 no-underline hover:border-accent"
+        >
+          <span className="flex flex-col gap-0.5">
+            <span className="font-display text-[17px] font-semibold text-ink">Voir mes graphiques expliqués</span>
+            <span className="text-[14px] text-muted-2">La pluie, l&apos;eau dans la terre et la chaleur des 30 derniers jours, en mots simples.</span>
+          </span>
+          <span aria-hidden="true" className="fleche-glisse shrink-0 text-xl text-accent transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none">
+            →
+          </span>
+        </Link>
       )}
 
       <BandeauTelegram />
