@@ -3,7 +3,10 @@
 // - les pages « à venir » générées par app/(app)/[rubrique]/[page] et app/(app)/aide.
 // Une entrée avec `aVenir` n'a pas encore de contenu : elle affiche une page d'attente.
 // Les autres pointent vers les pages déjà construites (tableau de bord, carte, données, cultures, agent, historique).
+// La sidebar présente ces pages en trois blocs (voir plus bas) : QUOTIDIEN, MES_DONNEES et BIENTOT.
+// RUBRIQUES reste la source complète (adresses des pages à venir et suggestions « Déjà disponible »).
 import type { ComponentType } from 'react'
+import { NOM_AGENT } from '../agent/questions'
 import {
   IcoAide,
   IcoBulle,
@@ -11,10 +14,12 @@ import {
   IcoCouches,
   IcoGraine,
   IcoGraphique,
+  IcoHorloge,
   IcoNuage,
   IcoPiece,
   IcoPresse,
   IcoReglages,
+  IcoTableau,
 } from '../landing/icones'
 
 export type PageMenu = {
@@ -40,10 +45,35 @@ export const EVENEMENT_OUVRIR_MENU = 'sstack:ouvrir-menu'
 const aVenir = (titre: string, href: string, description: string): PageMenu => ({ titre, href, description, aVenir: true })
 
 export const VUE_ENSEMBLE: PageMenu = {
-  titre: 'Dashboard',
+  titre: 'Accueil',
   href: '/tableau-de-bord',
   description: 'Le verdict de semis et les conditions du site choisi.',
 }
+
+/** Entrée affichée directement (sans rubrique à déplier), avec son icône. */
+export type EntreeDirecte = PageMenu & { icone: Rubrique['icone']; miseEnAvant?: boolean }
+
+/**
+ * « Au quotidien » : les pages déjà prêtes et les plus utiles, en accès direct (un seul clic).
+ * Ordre = ce que le producteur vient faire : voir le verdict, poser une question, situer, sa culture, relire.
+ */
+export const QUOTIDIEN: readonly EntreeDirecte[] = [
+  { ...VUE_ENSEMBLE, icone: IcoTableau },
+  {
+    titre: `Demander à ${NOM_AGENT}`,
+    href: '/assistant',
+    description: 'Posez vos questions à l’agent, à l’écrit, à la voix ou avec une photo.',
+    correspond: ['/assistant', '/discuter'],
+    icone: IcoBulle,
+    miseEnAvant: true,
+  },
+  { titre: 'Carte des sites', href: '/carte', description: 'Les sites suivis et leur verdict de semis, en 2D ou en 3D.', correspond: ['/carte', '/parcelles'], icone: IcoCarte },
+  { titre: 'Mes cultures', href: '/cultures', description: 'Repères et questions par culture.', icone: IcoGraine },
+  { titre: 'Mes conseils', href: '/historique', description: 'Les conseils déjà donnés, sur le web et Telegram.', icone: IcoHorloge },
+]
+
+/** Rubriques de « Mes données » (pages prêtes d'abord, pages à venir marquées « Bientôt »). */
+const IDS_MES_DONNEES = ['climat', 'sols'] as const
 
 export const RUBRIQUES: readonly Rubrique[] = [
   {
@@ -155,8 +185,26 @@ export const CENTRE_AIDE: PageMenu & { icone: Rubrique['icone'] } = {
   icone: IcoAide,
 }
 
-/** Toutes les rubriques dépliables, dans l'ordre de la sidebar. */
+/** Toutes les rubriques (source des pages « à venir » et de leurs suggestions). */
 export const TOUTES_RUBRIQUES: readonly Rubrique[] = [...RUBRIQUES, PARAMETRES]
+
+// ── Présentation de la sidebar ──
+// Chaque page apparaît une seule fois : « Au quotidien », « Mes données » ou « Bientôt disponible ».
+
+const hrefsQuotidien = new Set(QUOTIDIEN.map((e) => e.href))
+
+/** « Mes données » : climat puis sol, titres courts, pages prêtes en premier. */
+export const MES_DONNEES: readonly Rubrique[] = IDS_MES_DONNEES.flatMap((id) => {
+  const r = RUBRIQUES.find((x) => x.id === id)
+  if (!r) return []
+  const titre = id === 'climat' ? 'Pluie et climat' : 'Mon sol'
+  return [{ ...r, titre, pages: [...r.pages.filter((p) => !p.aVenir), ...r.pages.filter((p) => p.aVenir)] }]
+})
+
+/** « Bientôt disponible » : les pages en préparation des autres rubriques, regroupées par rubrique. */
+export const BIENTOT: readonly Rubrique[] = RUBRIQUES.filter((r) => !(IDS_MES_DONNEES as readonly string[]).includes(r.id))
+  .map((r) => ({ ...r, pages: r.pages.filter((p) => p.aVenir && !hrefsQuotidien.has(p.href)) }))
+  .filter((r) => r.pages.length > 0)
 
 /** L'entrée correspond-elle au chemin courant ? */
 export function estPageActive(chemin: string, page: PageMenu): boolean {
