@@ -69,6 +69,7 @@ Règles :
 - Chaque vue gère ses trois états : chargement, erreur (avec « Réessayer »), prêt.
 - Jamais de clé secrète dans `web/` : seulement `NEXT_PUBLIC_API_URL`.
 - Charte : Outfit (textes), JetBrains Mono (chiffres) ; le Jaune Soleil n'est jamais du texte sur fond clair.
+- Identité visuelle (logos, couleurs, polices, favicon, image de partage) : voir **`IDENTITE_VISUELLE.md`**. Le nom, le slogan et les couleurs se prennent dans `src/lib/marque.ts`, les logos via le composant `Logo`.
 
 ## Le contrat avec le serveur
 

@@ -42,7 +42,7 @@ function APropos() {
       <p className="m-0 font-display text-[clamp(1.7rem,3.6vw,3.3rem)] leading-[1.25] font-semibold tracking-[-0.03em] text-encre">
         Nous aidons les producteurs
         <PhotoEnLigne photo={PHOTOS.pastille1} alt="Une agricultrice tient une poignée d’herbe." />
-        à semer au <span className="text-vif">bon moment</span>, grâce aux mesures des satellites
+        à semer au <span className="text-success">bon moment</span>, grâce aux mesures des satellites
         <PhotoEnLigne photo={PHOTOS.pastille3} alt="Vue aérienne de champs verts." />
         de la NASA et à un agent
         <PhotoEnLigne photo={PHOTOS.pastille2} alt="Des mains tiennent des grains récoltés." />
@@ -137,7 +137,7 @@ function Methode() {
       <div className={`flex flex-col justify-center gap-8 py-20 lg:py-24 ${GOUTTIERE}`}>
         <SurTitre clair>Méthode</SurTitre>
         <h2 id="titre-methode" className="m-0 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-bold tracking-[-0.04em]">
-          Des satellites jusqu&apos;à <span className="text-vif">votre champ</span>.
+          Des satellites jusqu&apos;à <span className="text-pousse">votre champ</span>.
         </h2>
         <p className="m-0 max-w-[56ch] text-base leading-relaxed text-white/75">
           Pas de capteur à acheter ni de matériel à installer : les données viennent des satellites et des modèles de la NASA, et de la base
@@ -146,7 +146,7 @@ function Methode() {
         <ol className="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-3">
           {ETAPES_METHODE.map((e) => (
             <li key={e.n} className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.05] p-5">
-              <span className="font-mono text-3xl font-bold text-vif">{e.n}</span>
+              <span className="font-mono text-3xl font-bold text-pousse">{e.n}</span>
               <span className="text-lg font-semibold">{e.titre}</span>
               <span className="text-sm leading-relaxed text-white/70">{e.texte}</span>
             </li>
@@ -270,7 +270,7 @@ function Appel() {
     <section aria-labelledby="titre-appel" className={`flex flex-col items-start justify-between gap-10 bg-cnx py-20 text-white lg:flex-row lg:items-end lg:py-24 ${GOUTTIERE}`}>
       <div className="flex flex-col gap-5">
         <h2 id="titre-appel" className="m-0 font-display text-[clamp(2.2rem,4.6vw,4rem)] leading-[1.02] font-bold tracking-[-0.04em]">
-          Prêt à semer au bon moment ?
+          Prêt à semer au bon moment&nbsp;?
         </h2>
         <p className="m-0 max-w-[56ch] text-lg text-white/90">
           Créez votre compte, choisissez votre site et laissez {NOM_AGENT} vous guider, sur le web ou sur Telegram.
@@ -310,6 +310,7 @@ function PiedDePage() {
   const lien = 'text-sm text-white/80 no-underline hover:text-white'
   return (
     <footer className="bg-nuit text-white">
+      <div aria-hidden="true" className="bande-tricolore" />
       <div className={`grid grid-cols-1 gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr] ${GOUTTIERE}`}>
         <div className="flex flex-col gap-5">
           <Logo clair sousTitre="Conseils de semis" />

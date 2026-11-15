@@ -11,7 +11,7 @@ import { useApi } from '@/lib/use-api'
 import { IcoCible, IcoNuage, IcoPluie, IcoSoleil } from './icones'
 
 const TEXTE_VERDICT: Record<Verdict | 'inconnu', { libelle: string; couleur: string }> = {
-  favorable: { libelle: 'Favorable', couleur: 'text-pousse' },
+  favorable: { libelle: 'Favorable', couleur: 'text-menthe' },
   risquée: { libelle: 'Risquée', couleur: 'text-sun' },
   défavorable: { libelle: 'Défavorable', couleur: 'text-[#F2A889]' },
   inconnu: { libelle: 'Indisponible', couleur: 'text-white/70' },
@@ -82,7 +82,7 @@ export function CarteConditions() {
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span className="text-[11px] text-white/70">Pluie 30 j</span>
-                <span className={`font-mono text-sm font-bold ${lue.ecart30 !== null && lue.ecart30 < 0 ? 'text-sun' : 'text-pousse'}`}>
+                <span className={`font-mono text-sm font-bold ${lue.ecart30 !== null && lue.ecart30 < 0 ? 'text-sun' : 'text-menthe'}`}>
                   {ecartFr(lue.ecart30)}
                 </span>
               </div>

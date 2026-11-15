@@ -1,0 +1,77 @@
+S'STACK — CODES COULEURS
+NASA Space Apps Challenge 2026 · Field Shift: Adapting Farms with NASA Data
+Identité visuelle d'inspiration gabonaise
+
+NOIR ÉBÈNE	#111A14
+VERT FORÊT	#0B5D3B
+VERT GABON	#009E60
+JAUNE SOLEIL	#FCD116
+BLEU OCÉAN	#3A75C4
+TERRE LATÉRITE	#B4532A
+PIERRE DE MBIGOU	#E9E2CF
+BLANC	#FFFFFF
+
+========================================================================
+DÉTAIL
+========================================================================
+NOIR ÉBÈNE         HEX #111A14   RGB 17, 26, 20
+                   Texte principal, fonds sombres (bois d'ébène du Gabon)
+VERT FORÊT         HEX #0B5D3B   RGB 11, 93, 59
+                   Couleur principale : en-têtes, boutons (forêt équatoriale, 88 % du territoire)
+VERT GABON         HEX #009E60   RGB 0, 158, 96
+                   Succès, sol sain, cultures (vert du drapeau)
+JAUNE SOLEIL       HEX #FCD116   RGB 252, 209, 22
+                   Accent, alertes chaleur, mise en avant (jaune du drapeau, l'équateur)
+BLEU OCÉAN         HEX #3A75C4   RGB 58, 117, 196
+                   Eau, pluie, humidité du sol, données NASA (bleu du drapeau, l'Atlantique)
+TERRE LATÉRITE     HEX #B4532A   RGB 180, 83, 42
+                   Sol, santé des terres, alertes érosion (terre rouge du Gabon)
+PIERRE DE MBIGOU   HEX #E9E2CF   RGB 233, 226, 207
+                   Fonds clairs, cartes (pierre à sculpter de Mbigou)
+BLANC              HEX #FFFFFF   RGB 255, 255, 255
+                   Surfaces, texte sur fond sombre
+
+Les trois couleurs du drapeau gabonais sont reprises à l'identique :
+  Vert #009E60 (la forêt) · Jaune #FCD116 (le soleil, l'équateur) · Bleu #3A75C4 (la mer)
+
+========================================================================
+VARIABLES CSS (design tokens)
+========================================================================
+:root {
+  --ss-noir-ebene: #111A14;
+  --ss-vert-foret: #0B5D3B;
+  --ss-vert-gabon: #009E60;
+  --ss-jaune-soleil: #FCD116;
+  --ss-bleu-ocean: #3A75C4;
+  --ss-terre-laterite: #B4532A;
+  --ss-pierre-mbigou: #E9E2CF;
+  --ss-blanc: #FFFFFF;
+
+  /* Rôles d'interface */
+  --ss-primary: #0B5D3B;      /* Vert Forêt */
+  --ss-accent: #FCD116;       /* Jaune Soleil */
+  --ss-text: #111A14;         /* Noir Ébène */
+  --ss-background: #E9E2CF;   /* Pierre de Mbigou */
+  --ss-surface: #FFFFFF;
+  --ss-success: #009E60;      /* sol sain */
+  --ss-warning: #FCD116;      /* stress thermique */
+  --ss-danger: #B4532A;       /* érosion, sol dégradé */
+  --ss-info: #3A75C4;         /* eau, pluie, données NASA */
+}
+
+========================================================================
+CONTRASTES (WCAG 2.1) — à respecter pour l'accessibilité
+========================================================================
+  NOIR ÉBÈNE     sur PIERRE DE MBIGOU  13.75:1   AAA
+  NOIR ÉBÈNE     sur BLANC             17.77:1   AAA
+  BLANC          sur VERT FORÊT         7.95:1   AAA
+  JAUNE SOLEIL   sur VERT FORÊT         5.40:1   AA
+  JAUNE SOLEIL   sur NOIR ÉBÈNE        12.08:1   AAA
+  VERT FORÊT     sur PIERRE DE MBIGOU   6.15:1   AA
+  BLANC          sur TERRE LATÉRITE     4.99:1   AA
+  BLANC          sur BLEU OCÉAN         4.64:1   AA
+  BLANC          sur VERT GABON         3.47:1   AA grand texte (≥ 24 px)
+  JAUNE SOLEIL   sur BLANC              1.47:1   À ÉVITER pour du texte
+
+Règle : le Jaune Soleil ne s'utilise jamais en texte sur fond clair ;
+il sert d'accent sur Vert Forêt ou Noir Ébène.

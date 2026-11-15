@@ -1,20 +1,49 @@
-// Logo S'STACK simplifié : insigne aux trois couleurs de la charte + nom.
-// Disque en CSS (pas de clipPath SVG à identifiant fixe : plusieurs logos sur la page, dont un masqué,
-// faisaient perdre l'arrondi aux suivants).
-export default function Logo({ clair = false, sousTitre }: { clair?: boolean; sousTitre?: string }) {
+// Logo officiel S'STACK (fichiers de public/brand/, voir lib/marque.ts).
+// - fond clair  → logo « principal » (symbole Vert Forêt + STACK Noir Ébène)
+// - fond sombre → logo « négatif » (symbole aux couleurs du drapeau + STACK blanc) : prop `clair`
+// - `variante` permet de forcer une version (tricolore, icône seule…).
+// Le symbole se lit « S' » : le logo se lit donc S'STACK (texte alternatif identique).
+import Image from 'next/image'
+import { LOGOS, MARQUE, type VarianteLogo } from '@/lib/marque'
+
+type Props = {
+  /** true sur fond sombre (Vert Forêt, Noir Ébène, photo) : version négative */
+  clair?: boolean
+  /** petite ligne sous le logo (ex. « Farm Intelligence ») */
+  sousTitre?: string
+  /** pour forcer une version précise du logo */
+  variante?: VarianteLogo
+  /** hauteur affichée du logo en pixels (30 par défaut) */
+  hauteur?: number
+  /** à mettre sur le logo visible dès l'arrivée sur la page (en-tête) */
+  prioritaire?: boolean
+}
+
+export default function Logo({ clair = false, sousTitre, variante, hauteur = 30, prioritaire = false }: Props) {
+  const choix: VarianteLogo = variante ?? (clair ? 'negatif' : 'principal')
+  const logo = LOGOS[choix]
+  const largeur = Math.round((hauteur * logo.largeur) / logo.hauteur)
+  const surFondSombre = clair || choix === 'negatif'
+
   return (
-    <span className="flex items-center gap-2.5">
-      <span aria-hidden="true" className="flex size-7 shrink-0 flex-col overflow-hidden rounded-full">
-        <span className="flex-1 bg-[#009E60]" />
-        <span className="flex-1 bg-[#FCD116]" />
-        <span className="flex-1 bg-[#3A75C4]" />
-      </span>
-      <span className="flex flex-col">
-        <span className={`font-display text-xl leading-tight font-bold tracking-[-0.3px] ${clair ? 'text-white' : 'text-ink'}`}>S&apos;STACK</span>
-        {sousTitre && (
-          <span className={`text-[9px] leading-none font-medium tracking-[0.12em] uppercase ${clair ? 'text-white/75' : 'text-muted'}`}>{sousTitre}</span>
-        )}
-      </span>
+    <span className="flex flex-col gap-1">
+      <Image
+        src={logo.src}
+        alt={MARQUE.nom}
+        width={largeur}
+        height={hauteur}
+        priority={prioritaire}
+        className="block h-auto max-w-none select-none"
+        style={{ width: largeur, height: hauteur }}
+        draggable={false}
+      />
+      {sousTitre && (
+        <span
+          className={`pl-0.5 text-[9px] leading-none font-medium tracking-[0.12em] uppercase ${surFondSombre ? 'text-white/75' : 'text-muted'}`}
+        >
+          {sousTitre}
+        </span>
+      )}
     </span>
   )
 }

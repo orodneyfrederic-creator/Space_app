@@ -5,7 +5,7 @@ export const CLASSE_CHAMP =
   'h-14 w-full rounded-[10px] border border-[#D9E3DD] bg-white px-4 font-sans text-base text-encre outline-none transition-[border-color,box-shadow] placeholder:text-[#9AA3B5] focus:border-cnx focus:shadow-[0_0_0_4px_rgba(29,120,82,0.12)]'
 
 export const CLASSE_BOUTON_PRINCIPAL =
-  'flex h-14 w-full cursor-pointer items-center justify-center rounded-[10px] border-0 bg-cnx font-sans text-base font-semibold text-white transition-colors hover:bg-profond'
+  'flex h-14 w-full cursor-pointer items-center justify-center rounded-[10px] border-0 bg-cnx font-sans text-base font-semibold text-white transition-colors hover:bg-vif-hover'
 
 export const CLASSE_BOUTON_SECONDAIRE =
   'flex h-14 w-full items-center justify-center rounded-[10px] border border-[#D9E3DD] bg-white text-base font-semibold text-encre no-underline transition-colors hover:border-cnx hover:text-cnx'

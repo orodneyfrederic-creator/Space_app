@@ -34,7 +34,7 @@ export default function FormConnexion() {
           </label>
           <BoutonAgent
             question="J'ai oublié mon mot de passe"
-            className="min-h-11 border-0 bg-transparent p-0 font-sans text-[15px] font-semibold text-cnx hover:text-profond"
+            className="min-h-11 border-0 bg-transparent p-0 font-sans text-[15px] font-semibold text-cnx hover:text-vif-hover"
           >
             Mot de passe oublié ?
           </BoutonAgent>

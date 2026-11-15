@@ -46,23 +46,47 @@
   --color-risk-bg: #F5E0D5;
   --color-risk-bar: #B4532A;
 
-  /* Landing : palette inspirée du design system CNX 4.0 (aplats verts, angles droits) */
-  --color-profond: #024534;      /* fond du hero, bandeaux sombres */
-  --color-nuit: #012A20;         /* pied de page */
-  --color-cnx: #1D7852;          /* vert principal sur fond clair (texte, bordures) */
-  --color-vif: #18A061;          /* mots mis en avant, boutons */
-  --color-vif-hover: #077A44;
-  --color-menthe: #6BC5A3;       /* petits textes et icônes sur fond sombre */
-  --color-pale: #F1F6F3;         /* fond des sections claires */
-  --color-encre: #231F20;        /* titres sur fond clair */
-  --color-ardoise: #5B647B;      /* textes secondaires sur fond clair */
+  /* Landing et navigation : alignées sur la charte S'STACK (anciennement palette « CNX 4.0 »).
+     Les noms de classes sont conservés (bg-profond, text-cnx…) : seules les valeurs ont changé. */
+  --color-profond: #0B5D3B;      /* Vert Forêt : grands aplats sombres (sidebar, bandeaux, panneau de connexion) */
+  --color-nuit: #111A14;         /* Noir Ébène : pied de page */
+  --color-cnx: #0B5D3B;          /* Vert Forêt : texte vert et bordures sur fond clair */
+  --color-vif: #0B5D3B;          /* Vert Forêt : boutons pleins (texte blanc, contraste 7,95:1) */
+  --color-vif-hover: #08472D;    /* Vert Forêt foncé : survol des boutons */
+  --color-menthe: #8FC2A8;       /* vert clair dérivé du Vert Forêt : petits textes et icônes sur fond sombre */
+  --color-pale: #F4F0E6;         /* Pierre de Mbigou éclaircie : fond des sections claires */
+  --color-encre: #111A14;        /* Noir Ébène : titres sur fond clair */
+  --color-ardoise: #535B53;      /* gris vert : textes secondaires sur fond clair */
 
-  /* Hero de la landing (maquette d'origine : photo transparente, cartes vitrées) */
-  --color-sous-bois: #0E2416;    /* ombre de la photo */
-  --color-pousse: #6CC04A;       /* vert vif des titres, sur fond sombre uniquement */
-  --color-menthe-pale: #D4EDBE;  /* carrés d'icônes des cartes vitrées */
-  --color-feuille: #2F7D3A;      /* boutons du hero */
-  --color-feuille-hover: #25692F;
+  /* Hero de la landing (photo + cartes vitrées) */
+  --color-sous-bois: #0E2416;    /* ombre portée sur la photo */
+  --color-pousse: #FCD116;       /* Jaune Soleil : mots mis en avant SUR FOND SOMBRE uniquement (5,40:1 sur Vert Forêt) */
+  --color-menthe-pale: #DCEBE2;  /* fond des carrés d'icônes des cartes vitrées */
+  --color-feuille: #0B5D3B;      /* Vert Forêt : boutons du hero */
+  --color-feuille-hover: #08472D;
+}
+
+/* Variables officielles de la charte (Code couleurs S'STACK.txt), pour le CSS écrit à la main
+   et pour toute intégration externe (carte, graphiques, e-mails…). Mêmes valeurs que lib/marque.ts. */
+:root {
+  --ss-noir-ebene: #111A14;
+  --ss-vert-foret: #0B5D3B;
+  --ss-vert-gabon: #009E60;
+  --ss-jaune-soleil: #FCD116;
+  --ss-bleu-ocean: #3A75C4;
+  --ss-terre-laterite: #B4532A;
+  --ss-pierre-mbigou: #E9E2CF;
+  --ss-blanc: #FFFFFF;
+
+  --ss-primary: var(--ss-vert-foret);
+  --ss-accent: var(--ss-jaune-soleil);
+  --ss-text: var(--ss-noir-ebene);
+  --ss-background: var(--ss-pierre-mbigou);
+  --ss-surface: var(--ss-blanc);
+  --ss-success: var(--ss-vert-gabon);
+  --ss-warning: var(--ss-jaune-soleil);
+  --ss-danger: var(--ss-terre-laterite);
+  --ss-info: var(--ss-bleu-ocean);
 }
 
 @theme inline {
@@ -149,4 +173,15 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Bande tricolore de la charte (vert, jaune, bleu du drapeau gabonais), comme au bas des brand boards */
+.bande-tricolore {
+  height: 9px;
+  background: linear-gradient(
+    to bottom,
+    var(--ss-vert-gabon) 0 33.34%,
+    var(--ss-jaune-soleil) 33.34% 66.67%,
+    var(--ss-bleu-ocean) 66.67% 100%
+  );
 }

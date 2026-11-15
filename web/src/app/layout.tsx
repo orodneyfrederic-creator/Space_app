@@ -1,29 +1,54 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import AgentFlottant from "@/components/agent/AgentFlottant";
+import { COULEURS, MARQUE } from "@/lib/marque";
 import "./globals.css";
 
-// Polices de la charte S'STACK
-const outfit = Outfit({
+// Polices officielles de la charte S'STACK, servies depuis le projet (app/fonts/, licence OFL) :
+// pas de dépendance à Google Fonts, rendu identique en ligne et hors ligne.
+// Outfit = textes et titres ; JetBrains Mono = chiffres, mesures et données NASA.
+const outfit = localFont({
   variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  src: [
+    { path: "./fonts/Outfit-Light.ttf", weight: "300", style: "normal" },
+    { path: "./fonts/Outfit-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/Outfit-Medium.ttf", weight: "500", style: "normal" },
+    { path: "./fonts/Outfit-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "./fonts/Outfit-Bold.ttf", weight: "700", style: "normal" },
+    { path: "./fonts/Outfit-ExtraBold.ttf", weight: "800", style: "normal" },
+  ],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  display: "swap",
+  src: [
+    { path: "./fonts/JetBrainsMono-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/JetBrainsMono-Bold.ttf", weight: "700", style: "normal" },
+  ],
 });
 
+// Icônes (favicon.ico, icon.png, apple-icon.png), image de partage (opengraph-image.png)
+// et manifeste (manifest.ts) sont dans app/ : Next.js les déclare tout seul.
 export const metadata: Metadata = {
-  title: "S'STACK",
-  description: "Conseils agricoles pour les producteurs gabonais, à partir des données NASA.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: { default: `${MARQUE.nom} · ${MARQUE.slogan}`, template: `%s · ${MARQUE.nom}` },
+  description: MARQUE.description,
+  applicationName: MARQUE.nom,
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: MARQUE.nom,
+    title: `${MARQUE.nom} · ${MARQUE.slogan}`,
+    description: MARQUE.description,
+  },
+  twitter: { card: "summary_large_image", title: `${MARQUE.nom} · ${MARQUE.slogan}`, description: MARQUE.description },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0B5D3B",
+  themeColor: COULEURS.vertForet,
 };
 
 // Layout racine : polices et <html> seulement.

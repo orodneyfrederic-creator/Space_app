@@ -38,7 +38,7 @@ export default function EnTeteLanding() {
     >
       <div className={`flex h-full items-center justify-between gap-6 ${GOUTTIERE}`}>
         <Link href="/" aria-label="S'STACK, accueil" className="no-underline">
-          <Logo clair sousTitre="Conseils de semis" />
+          <Logo clair sousTitre="Conseils de semis" prioritaire />
         </Link>
 
         {/* Navigation en pastille blanche, comme sur la maquette */}

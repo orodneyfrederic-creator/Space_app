@@ -80,7 +80,7 @@ export default function FormInscription() {
 
       <p className="m-0 text-center text-[15px] text-ardoise">
         Déjà un compte ?{' '}
-        <Link href="/connexion" className="font-semibold text-cnx no-underline hover:text-profond">
+        <Link href="/connexion" className="font-semibold text-cnx no-underline hover:text-vif-hover">
           Se connecter
         </Link>
       </p>
