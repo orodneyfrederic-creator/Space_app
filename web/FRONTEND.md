@@ -40,6 +40,7 @@ web/src/
     (app)/parcelles/[id]/     /parcelles/tchibanga  fiche d'un site (rendue dynamiquement)
     (app)/donnees/            /donnees              chiffres NASA du site choisi
     (app)/cultures/           /cultures             repères et questions par culture
+    (app)/assistant/          /assistant            MODULE 06 assistant intelligent (texte, micro, photo, actions à confirmer)
     (app)/discuter/           /discuter             parler à l'agent (texte + micro)
     (app)/historique/         /historique           conseils donnés (web + Telegram)
   components/
@@ -52,6 +53,7 @@ web/src/
     navigation/menu.ts        ← menu « Farm Intelligence » (sidebar + tiroir mobile) ; les entrées « aVenir »
                                 sont servies par app/(app)/[rubrique]/[page] (page d'attente)
     landing/                  ← en-tête fixe, hero, sections, carrousel ; photos Unsplash dans public/landing/ (crédits : photos.ts)
+    assistant/                ← module 06 : FenetreAssistant, BulleMessage, CarteAction, HistoriqueAssistant
     vues/                     ← une vue par page (chargement, erreur, mise en page)
     carte/  climat/  discussion/  historique/  navigation/  ui/
   lib/
@@ -62,7 +64,21 @@ web/src/
     site-choisi.ts            ← site choisi, mémorisé dans le navigateur (Tchibanga par défaut)
     verdict.ts                ← couleurs des verdicts (charte S'STACK)
     cultures.ts               ← repères et questions par culture (page /cultures et landing)
+    assistant.ts              ← module 06 : sources consultées, actions proposées, journal des actions
 ```
+
+## Module 06 — Assistant intelligent (`/assistant`)
+
+Le producteur pose sa question (texte, micro, ou photo + description) ; le **vrai agent** répond (`POST /api/conseil`, `/api/voix`) avec les données du site choisi.
+
+- **Données consultées** : sous chaque réponse, ce que l'agent a réellement lu, tiré de la fiche renvoyée (date NASA, verdict calculé, pluie 30 j, sol SoilGrids, modèle). Rien d'inventé.
+- **Pièce jointe** : photo (JPEG/PNG/WebP) ou PDF, 10 Mo max, avec aperçu. ⚠️ Le serveur n'analyse pas encore les images : la photo reste dans le navigateur et la réponse se base sur la description, ce qui est dit au producteur.
+- **Diagnostic** : photo jointe ou symptômes décrits (taches, jaunissement…) → badge « hypothèse à vérifier sur le terrain ».
+- **Action proposée** : après une question de semis, selon le verdict calculé par le serveur → « Rappel : semer » (favorable) ou « Revérifier le verdict » (risquée, défavorable). Aperçu, puis Confirmer / Annuler.
+- **Historique** : onglet avec le journal des actions et les dernières conversations (`GET /api/conseils`).
+- **Journal des actions** : gardé dans le navigateur (`localStorage`, `lib/assistant.ts`) en attendant le serveur.
+
+Côté base : `supabase/migrations/003_assistant_ia.sql` prépare les tables `ai_*` (`ai_agents`, `ai_agent_permissions`, `ai_knowledge_sources`, `ai_conversations`, `ai_messages`, `ai_tool_calls`, `ai_recommendations`, `ai_action_logs`) et le bucket privé `ai-pieces-jointes`. Reste à faire côté serveur : analyse des photos, routes `/api/assistant/*` (pièces jointes, actions, journal), appel d'outils par le LLM.
 
 Règles :
 - Ne jamais afficher une valeur inventée : soit la donnée du serveur, soit « chargement » ou « indisponible ».

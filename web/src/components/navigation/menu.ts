@@ -96,7 +96,7 @@ export const RUBRIQUES: readonly Rubrique[] = [
     titre: 'Assistant intelligent',
     icone: IcoBulle,
     pages: [
-      { titre: 'Assistant agricole IA', href: '/discuter', description: 'Posez vos questions à l’agent, à l’écrit ou à la voix.', correspond: ['/discuter', '/assistant'] },
+      { titre: 'Assistant agricole IA', href: '/assistant', description: 'Posez vos questions à l’agent, à l’écrit, à la voix ou avec une photo.', correspond: ['/assistant', '/discuter'] },
       aVenir('Diagnostic des cultures', '/assistant-ia/diagnostic', 'Décrivez ou photographiez un problème sur une culture pour obtenir un diagnostic.'),
       aVenir('Conseils personnalisés', '/assistant-ia/conseils', 'Les conseils de l’agent pour vos parcelles et vos cultures.'),
       { titre: 'Historique des conversations', href: '/historique', description: 'Les conseils déjà donnés, sur le web et Telegram.' },

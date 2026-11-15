@@ -19,8 +19,8 @@ import TexteAgent from './TexteAgent'
 type Message = { id: string; role: 'moi' | 'agent'; texte: string; erreur?: boolean; rapide?: boolean }
 
 const CLE_STOCKAGE = 'sstack:agent-conversation'
-/** La page Agent a déjà sa propre discussion complète (micro compris). */
-const PAGES_SANS_AGENT = ['/discuter']
+/** Les pages Agent et Assistant ont déjà leur propre discussion complète (micro compris). */
+const PAGES_SANS_AGENT = ['/discuter', '/assistant']
 /** Pages sans barre d'onglets en bas sur téléphone (la bulle peut descendre). */
 const PAGES_SANS_ONGLETS = ['/', '/connexion', '/inscription']
 const LONGUEUR_MAX = 1000 // limite du serveur pour une question
