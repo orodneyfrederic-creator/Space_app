@@ -1,10 +1,10 @@
 'use client'
 // Dashboard du producteur : SON champ, SA culture, et ce qu'il doit faire, dans l'ordre.
-//  1. Bonjour + culture (manioc ou plantain) + lieu
+//  1. Bonjour + culture (manioc ou plantain) + lieu, puis le bloc de sol 3D centré
 //  2. La décision de la semaine (CarteAction)
 //  3. Les alertes des prochains jours (chaleur, forte pluie, jours secs, terre gorgée d'eau, pluie utile), avec les gestes
 //  4. Le plan, étape par étape
-//  5. Les 7 prochains jours (prévisions Open-Meteo), l'état de la terre en mots simples, les 3 chiffres, le bloc de sol 3D
+//  5. Les 7 prochains jours (prévisions Open-Meteo), l'état de la terre en mots simples, les 3 chiffres
 // Tout est calculé par le serveur (/api/etat-sol, /api/conseils-jour) ; ici on ne fait que l'afficher.
 import Link from 'next/link'
 import { getConseilsJour } from '@/lib/api'
@@ -124,6 +124,9 @@ export default function AccueilProducteur() {
         <Erreur message={`${etatSol.message} Vous pouvez aussi placer votre champ sur la carte (« Changer de lieu »).`} onReessayer={etatSol.recharger} />
       )}
 
+      {/* Le bloc de terre en 3D, centré en haut du dashboard */}
+      <div className="mx-auto w-full max-w-3xl">{etat ? <CoupeSol etat={etat} /> : etatSol.statut === 'chargement' && <SqueletteCoupe />}</div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-6">
         {/* Colonne de gauche : décider et agir */}
         <div className="flex min-w-0 flex-col gap-4">
@@ -153,7 +156,6 @@ export default function AccueilProducteur() {
           {cj ? <PrevisionsSemaine conseils={cj} /> : conseils.statut === 'chargement' && <Squelette hauteur="h-48" />}
           {cj && <CarteEtatTerre etat={cj.etatTerre} />}
           {etat && <Indicateurs etat={etat} />}
-          {etat ? <CoupeSol etat={etat} /> : etatSol.statut === 'chargement' && <SqueletteCoupe />}
         </div>
       </div>
 
