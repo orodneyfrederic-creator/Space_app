@@ -7,7 +7,7 @@
 // Accessibilité : un petit bouton « pause » (WCAG 2.2.2), arrêt quand l'onglet est caché, et aucune animation
 // si le visiteur a demandé moins de mouvements (on affiche alors le dernier jour).
 import { useEffect, useId, useState, useSyncExternalStore, type CSSProperties } from 'react'
-import { couleurHumidite, degres, ETATS_COUCHE, FLECHES, jourCourt, NOMS_COUCHES, nuancer, pourcent } from '@/lib/etat-sol'
+import { couleurHumidite, degres, ETATS_COUCHE, jourCourt, NOMS_COUCHES, nuancer, pourcent } from '@/lib/etat-sol'
 import type { CoucheSol, EtatSol } from '@/lib/types'
 
 // ── Géométrie isométrique (2:1) ──
@@ -203,7 +203,10 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
   return (
     <figure data-visite="coupe" className="m-0 flex flex-col gap-3 rounded-3xl border border-line bg-surface p-4">
       <div className="flex items-center justify-between gap-2">
-        <figcaption className="font-display text-base font-semibold text-ink">Votre sol, couche par couche</figcaption>
+        <figcaption className="flex flex-col">
+          <span className="font-display text-base font-semibold text-ink">Votre terre vue en coupe</span>
+          <span className="text-[13px] text-muted-2">Plus c&apos;est bleu, avec des gouttes, plus la terre est mouillée.</span>
+        </figcaption>
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm text-muted-2">{point ? (aujourdhui ? `${jourCourt(point.date)} · aujourd'hui` : jourCourt(point.date)) : '—'}</span>
           {!moinsDeMouvement && serie.length > 1 && (
@@ -288,7 +291,7 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
             {temp === null ? '—' : `${Math.round(temp)}°`}
           </text>
           <text x={17} y={basTube + 50} textAnchor="middle" fontSize={10} fill="#434A43">
-            surface
+            chaleur
           </text>
         </g>
 
@@ -302,10 +305,11 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
             <g key={`e-${nom}`}>
               <line x1={R.x + 2} y1={yFace} x2={R.x + 12} y2={cy + 4} stroke="#111A14" strokeOpacity={0.4} />
               <text x={R.x + 16} y={cy} fontSize={13} fontWeight={700} fill="#111A14">
-                {NOMS_COUCHES[nom]} · <tspan fontFamily="var(--font-mono)">{pourcent(v)}</tspan>
+                {NOMS_COUCHES[nom]}
               </text>
               <text x={R.x + 16} y={cy + 15} fontSize={12} fill="#434A43">
-                {aujourdhui && c ? `${ETATS_COUCHE[c.etat]}${c.tendance7j ? ` ${FLECHES[c.tendance7j]}` : ''}` : ' '}
+                {aujourdhui && c && c.etat !== 'inconnu' ? `${ETATS_COUCHE[c.etat]} · ` : ''}
+                <tspan fontFamily="var(--font-mono)">{pourcent(v)}</tspan>
               </text>
               <rect x={R.x + 16} y={cy + 21} width={112} height={5} rx={2.5} fill="#EFEADD" />
               <rect x={R.x + 16} y={cy + 21} width={v === null ? 0 : 112 * v} height={5} rx={2.5} fill={couleurHumidite(v)} className="transition-[width,fill] duration-500 motion-reduce:transition-none" />
@@ -316,7 +320,7 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
           )
         })}
         <text x={R.x + 16} y={424} fontSize={10} fill="#434A43">
-          ┆ normale du mois
+          ┆ = habituel ce mois-ci
         </text>
       </svg>
 
@@ -331,7 +335,7 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
           </div>
           <div className="flex justify-between font-mono text-[11px] text-muted">
             <span>{serie[0] ? jourCourt(serie[0].date) : ''}</span>
-            <span>les 30 derniers jours</span>
+            <span>le film des 30 derniers jours</span>
             <span>{serie[dernier] ? jourCourt(serie[dernier].date) : ''}</span>
           </div>
         </div>
@@ -339,9 +343,9 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
 
       {/* Échelle de couleur */}
       <div className="flex items-center gap-2 text-[12px] text-muted-2">
-        <span>sec</span>
+        <span>terre sèche</span>
         <span aria-hidden="true" className="h-2 flex-1 rounded-full" style={{ background: `linear-gradient(90deg, ${[0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1].map((v) => couleurHumidite(v)).join(', ')})` }} />
-        <span>gorgé d&apos;eau</span>
+        <span>pleine d&apos;eau</span>
       </div>
 
       <button
@@ -354,13 +358,13 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
       </button>
       {tableau && (
         <table className="w-full border-collapse text-left text-sm">
-          <caption className="mb-1 text-left text-xs text-muted">Valeurs du dernier jour publié · normale = moyenne NASA du mois</caption>
+          <caption className="mb-1 text-left text-xs text-muted">Chiffres du dernier jour publié · « habituel » = moyenne NASA de ce mois</caption>
           <thead>
             <tr className="border-b border-line text-muted-2">
-              <th className="py-1.5 font-semibold">Couche</th>
-              <th className="py-1.5 font-semibold">Humidité</th>
+              <th className="py-1.5 font-semibold">Où</th>
+              <th className="py-1.5 font-semibold">Eau</th>
               <th className="py-1.5 font-semibold">État</th>
-              <th className="py-1.5 font-semibold">Normale</th>
+              <th className="py-1.5 font-semibold">Habituel</th>
             </tr>
           </thead>
           <tbody>
@@ -376,7 +380,7 @@ export default function CoupeSol({ etat }: { etat: EtatSol }) {
               )
             })}
             <tr>
-              <td className="py-1.5">Température de surface</td>
+              <td className="py-1.5">Chaleur de la terre</td>
               <td className="py-1.5 font-mono">{degres(etat.tempSurface.actuelle)}</td>
               <td className="py-1.5">—</td>
               <td className="py-1.5 font-mono">{degres(etat.tempSurface.normale)}</td>

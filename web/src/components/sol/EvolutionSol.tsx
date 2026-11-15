@@ -11,11 +11,11 @@ import type { EtatSol } from '@/lib/types'
 
 const COULEURS = { surface: '#B4532A', racines: '#0B5D3B', profondeur: '#3A75C4', tempSurface: '#B4532A', tmax: '#535B53', pluie: '#3A75C4' }
 const NOMS: Record<string, string> = {
-  surface: 'Surface',
+  surface: 'Dessus',
   racines: 'Racines',
-  profondeur: 'Profondeur',
-  tempSurface: 'Surface du sol',
-  tmax: 'Air (max)',
+  profondeur: 'Profond',
+  tempSurface: 'Terre',
+  tmax: 'Air',
   pluie: 'Pluie',
 }
 const nombre = (v: number, unite: string) => `${(Math.round(v * 10) / 10).toString().replace('.', ',')} ${unite}`
@@ -27,7 +27,7 @@ function Bloc({ titre, source, children }: { titre: string; source: string; chil
     <figure className="m-0 flex flex-col gap-1.5">
       <figcaption className="text-sm font-semibold text-ink">{titre}</figcaption>
       <div className="h-44 w-full">{children}</div>
-      <p className="m-0 text-[11px] text-muted">Source : {source} · maille d&apos;environ 50 km</p>
+      <p className="m-0 text-[11px] text-muted">Source : satellites NASA ({source}), zone d&apos;environ 50 km</p>
     </figure>
   )
 }
@@ -67,14 +67,14 @@ export default function EvolutionSol({ etat }: { etat: EtatSol }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Bloc titre="Humidité du sol (%)" source="NASA POWER (GWETTOP, GWETROOT, GWETPROF)">
+      <Bloc titre="Eau dans la terre (en %)" source="NASA POWER (GWETTOP, GWETROOT, GWETPROF)">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={donnees} margin={MARGES} syncId="evolution-sol">
             <CartesianGrid stroke="#E0D9C6" vertical={false} />
             <XAxis dataKey="date" tickFormatter={jourCourt} minTickGap={28} axisLine={{ stroke: '#D2C9B1' }} {...AXE} />
             <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} axisLine={false} width={44} {...AXE} />
             {normaleRacines !== null && (
-              <ReferenceLine y={Math.round(normaleRacines * 100)} stroke={COULEURS.racines} strokeDasharray="5 4" strokeOpacity={0.7} label={{ value: 'normale racines', position: 'insideBottomLeft', fontSize: 10, fill: '#434A43' }} />
+              <ReferenceLine y={Math.round(normaleRacines * 100)} stroke={COULEURS.racines} strokeDasharray="5 4" strokeOpacity={0.7} label={{ value: 'habituel (racines)', position: 'insideBottomLeft', fontSize: 10, fill: '#434A43' }} />
             )}
             <Tooltip {...infobulle('%')} />
             {(['surface', 'racines', 'profondeur'] as const).map((k) => (
@@ -86,7 +86,7 @@ export default function EvolutionSol({ etat }: { etat: EtatSol }) {
         </ResponsiveContainer>
       </Bloc>
 
-      <Bloc titre="Température (°C)" source="NASA POWER (TS, T2M_MAX)">
+      <Bloc titre="Chaleur de la terre et de l'air (en °C)" source="NASA POWER (TS, T2M_MAX)">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={donnees} margin={MARGES} syncId="evolution-sol">
             <CartesianGrid stroke="#E0D9C6" vertical={false} />
@@ -102,7 +102,7 @@ export default function EvolutionSol({ etat }: { etat: EtatSol }) {
         </ResponsiveContainer>
       </Bloc>
 
-      <Bloc titre="Pluie (mm/jour)" source="NASA POWER (PRECTOTCORR)">
+      <Bloc titre="Pluie de chaque jour (en mm)" source="NASA POWER (PRECTOTCORR)">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={donnees} margin={MARGES} syncId="evolution-sol">
             <CartesianGrid stroke="#E0D9C6" vertical={false} />

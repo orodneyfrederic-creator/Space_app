@@ -49,18 +49,18 @@ test('écart en points de pourcentage', () => {
 
 console.log('actionRecommandee')
 const base: EntreeAction = { verdict: 'favorable', saisonDemarree: true, surface: 'correct', racines: 'correct', tendanceRacines: 'stable', pluie7: 30 }
-test('données manquantes', () => assert.match(actionRecommandee({ ...base, verdict: null }), /indisponibles/))
-test('racines inconnues', () => assert.match(actionRecommandee({ ...base, racines: 'inconnu' }), /indisponibles/))
+test('données manquantes', () => assert.equal(codeAction({ ...base, verdict: null }), 'indisponible'))
+test('racines inconnues', () => assert.equal(codeAction({ ...base, racines: 'inconnu' }), 'indisponible'))
 test('sol gorgé d\'eau', () =>
-  assert.match(actionRecommandee({ ...base, racines: 'humide', tendanceRacines: 'hausse', pluie7: 80 }), /gorgé d'eau/))
+  assert.equal(codeAction({ ...base, racines: 'humide', tendanceRacines: 'hausse', pluie7: 80 }), 'engorge'))
 test('humide mais pluie modérée → pas gorgé', () =>
-  assert.match(actionRecommandee({ ...base, racines: 'humide', tendanceRacines: 'hausse', pluie7: 30 }), /Conditions réunies/))
-test('surface sèche sans pluie', () => assert.match(actionRecommandee({ ...base, surface: 'sec', pluie7: 4 }), /Sol sec en surface/))
-test('bon moment', () => assert.match(actionRecommandee(base), /Conditions réunies/))
+  assert.equal(codeAction({ ...base, racines: 'humide', tendanceRacines: 'hausse', pluie7: 30 }), 'semer'))
+test('surface sèche sans pluie', () => assert.equal(codeAction({ ...base, surface: 'sec', pluie7: 4 }), 'surface_seche'))
+test('bon moment', () => assert.match(actionRecommandee(base), /planter vos boutures/))
 test('saison pas démarrée', () =>
-  assert.match(actionRecommandee({ ...base, verdict: 'défavorable', saisonDemarree: false }), /pas encore démarré/))
-test('racines sèches', () => assert.match(actionRecommandee({ ...base, verdict: 'défavorable', racines: 'sec' }), /trop sec/))
-test('conditions incertaines', () => assert.match(actionRecommandee({ ...base, verdict: 'risquée' }), /incertaines/))
+  assert.equal(codeAction({ ...base, verdict: 'défavorable', saisonDemarree: false }), 'saison'))
+test('racines sèches', () => assert.equal(codeAction({ ...base, verdict: 'défavorable', racines: 'sec' }), 'sol_sec'))
+test('conditions incertaines', () => assert.equal(codeAction({ ...base, verdict: 'risquée' }), 'incertain'))
 
 test('code d\'action', () => {
   assert.equal(codeAction(base), 'semer')
@@ -119,7 +119,7 @@ test('série coupée au dernier jour publié, 3 couches, verdict', () => {
   assert.equal(e.couches[1]?.normale, 0.6)
   assert.equal(e.pluie7, 56)
   assert.equal(e.verdict, 'favorable')
-  assert.match(e.action, /Conditions réunies/)
+  assert.equal(e.codeAction, 'semer')
   assert.equal(e.lieuProche?.site.id, 'tchibanga')
 })
 test('aucune donnée publiée', () => {
@@ -127,7 +127,7 @@ test('aucune donnée publiée', () => {
   const e = construireEtatSol(-2.85, 11.02, vides, climato, new Date(Date.UTC(2026, 10, 12)))
   assert.equal(e.verdict, null)
   assert.equal(e.serie.length, 0)
-  assert.match(e.action, /indisponibles/)
+  assert.equal(e.codeAction, 'indisponible')
 })
 
 console.log(`\n${reussis} tests réussis.`)

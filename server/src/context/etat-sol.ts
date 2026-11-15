@@ -175,20 +175,20 @@ export async function resumeSite(site: Site): Promise<ResumeEtatSol> {
 const pct = (v: number | null) => (v === null ? 'non publiée' : `${Math.round(v * 100)} %`)
 const nb = (v: number | null, unite: string) => (v === null ? 'non publiée' : `${(Math.round(v * 10) / 10).toString().replace('.', ',')} ${unite}`)
 const jourMois = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
-const FLECHE = { hausse: '↑', baisse: '↓', stable: '→' } as const
-const NOM_COUCHE = { surface: 'Surface', racines: 'Racines', profondeur: 'Profondeur' } as const
+const NOM_COUCHE = { surface: 'Dessus de la terre', racines: 'Autour des racines', profondeur: 'En profondeur' } as const
+const MOT_ETAT = { sec: 'sèche', correct: 'bonne humidité', humide: 'très mouillée', inconnu: 'inconnue' } as const
 
 /** Réponse courte du bot Telegram à une position partagée. */
 export function texteEtatSolTelegram(e: EtatSol): string {
   if (e.dernierJour === null) return `${e.action}`
   const pres = e.lieuProche ? (e.lieuProche.distanceKm < 1 ? `à ${e.lieuProche.site.nom.split(' (')[0]}` : `près de ${e.lieuProche.site.nom.split(' (')[0]} (${e.lieuProche.distanceKm} km)`) : 'votre position'
-  const couches = e.couches.map((c) => `• ${NOM_COUCHE[c.nom]} : ${pct(c.indice)}${c.etat === 'inconnu' ? '' : ` (${c.etat}${c.tendance7j ? ` ${FLECHE[c.tendance7j]}` : ''})`}`)
+  const couches = e.couches.map((c) => `• ${NOM_COUCHE[c.nom]} : ${c.etat === 'inconnu' ? 'inconnue' : MOT_ETAT[c.etat]} (${pct(c.indice)} d'eau)`)
   return [
     `📍 Position enregistrée, ${pres}.`,
     '',
-    `État du sol (NASA, données du ${jourMois(e.dernierJour)}, zone d'environ 50 km) :`,
+    `Eau dans votre terre (satellites NASA, chiffres du ${jourMois(e.dernierJour)}) :`,
     ...couches,
-    `🌡️ Surface du sol : ${nb(e.tempSurface.actuelle, '°C')} · 🌧️ Pluie 7 jours : ${nb(e.pluie7, 'mm')}`,
+    `🌧️ Pluie de la semaine : ${nb(e.pluie7, 'mm')} · 🌡️ Chaleur de la terre : ${nb(e.tempSurface.actuelle, '°C')}`,
     '',
     `👉 ${e.action}`,
   ].join('\n')

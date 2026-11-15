@@ -62,15 +62,14 @@ export default function BandeauPosition({ lieu, etatSol, localisation, sites, lo
               {lieu ? libelleLieu(lieu, etatSol) : 'Lieu en cours de chargement…'}
             </p>
             <p className="m-0 flex flex-wrap items-center gap-x-1 text-[13px] leading-snug text-muted-2">
-              {etatSol?.dernierJour ? `Données NASA du ${dateFr(etatSol.dernierJour)}` : 'Données NASA'}
-              {' · '}zone d&apos;environ 50 km
+              {etatSol?.dernierJour ? `Chiffres des satellites de la NASA du ${dateFr(etatSol.dernierJour)}` : 'Chiffres des satellites de la NASA'}
               {lieu && lieu.source !== 'ville' && localisation !== 'trouve' && ` · position du ${jourMois(lieu.position.date)}`}
               {lieu?.source === 'gps' && lieu.position.precisionM !== null && ` · précision ${lieu.position.precisionM} m`}
               <Infobulle sujet="maille" />
             </p>
             {etatSol?.dernierJour && joursDeRetard(etatSol.dernierJour) > 5 && (
               <p className="m-0 mt-1 self-start rounded-full bg-warn-bg px-2.5 py-0.5 text-[12px] font-semibold text-warn-ink">
-                Données du {jourMois(etatSol.dernierJour + 'T')} : la NASA publie avec quelques jours de retard
+                Chiffres du {jourMois(etatSol.dernierJour + 'T')} : la NASA les publie avec quelques jours de retard
               </p>
             )}
           </div>
@@ -96,7 +95,6 @@ export default function BandeauPosition({ lieu, etatSol, localisation, sites, lo
         </div>
       </div>
 
-      <p className="m-0 text-[13px] text-muted">Données satellite NASA pour votre zone (environ 50 km autour de vous), pas une mesure de votre champ au mètre près.</p>
 
       {(localisation === 'recherche' || echec) && (
         <p role={echec ? 'alert' : 'status'} className={`m-0 rounded-xl px-3 py-2 text-sm ${echec ? 'bg-warn-bg text-warn-ink' : 'bg-paper text-muted-2'}`}>

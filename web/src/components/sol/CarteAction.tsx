@@ -10,6 +10,7 @@ export default function CarteAction({ etat }: { etat: EtatSol }) {
   const style = styleVerdict(TON_ACTION[etat.codeAction])
   return (
     <section data-visite="action" aria-labelledby="titre-action" className={`flex flex-col gap-2 rounded-3xl px-5 py-5 sm:px-6 sm:py-6 ${style.badge}`}>
+      <p className="m-0 text-[13px] font-semibold tracking-wide uppercase opacity-80">Cette semaine</p>
       <div className="flex items-start justify-between gap-3">
         <h2 id="titre-action" className="m-0 font-display text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] sm:text-[30px]">
           {TITRES_ACTION[etat.codeAction]}
@@ -17,11 +18,6 @@ export default function CarteAction({ etat }: { etat: EtatSol }) {
         <Infobulle sujet="action" />
       </div>
       <p className="m-0 text-[17px] leading-[1.45] text-ink">{etat.action}</p>
-      {etat.verdict !== null && etat.codeAction !== 'engorge' && (
-        <p className="m-0 text-[13px] text-muted-2">
-          Fenêtre de semis : {styleVerdict(etat.verdict).libelle.toLowerCase()} ({etat.raison}).
-        </p>
-      )}
     </section>
   )
 }

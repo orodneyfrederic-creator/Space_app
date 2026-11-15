@@ -11,8 +11,8 @@ export const degres = (t: number | null) => (t === null ? '—' : `${(Math.round
 /** 93.1 → « 93,1 mm » */
 export const millimetres = (n: number | null) => (n === null ? '—' : `${(Math.round(n * 10) / 10).toString().replace('.', ',')} mm`)
 
-export const NOMS_COUCHES: Record<CoucheSol['nom'], string> = { surface: 'Surface', racines: 'Racines', profondeur: 'Profondeur' }
-export const ETATS_COUCHE: Record<CoucheSol['etat'], string> = { sec: 'sec', correct: 'correct', humide: 'humide', inconnu: 'inconnu' }
+export const NOMS_COUCHES: Record<CoucheSol['nom'], string> = { surface: 'Dessus de la terre', racines: 'Autour des racines', profondeur: 'En profondeur' }
+export const ETATS_COUCHE: Record<CoucheSol['etat'], string> = { sec: 'sèche', correct: 'bonne humidité', humide: 'très mouillée', inconnu: 'inconnue' }
 
 export const FLECHES: Record<Tendance, string> = { hausse: '↑', baisse: '↓', stable: '→' }
 export const LIBELLES_TENDANCE: Record<Tendance, string> = { hausse: 'en hausse', baisse: 'en baisse', stable: 'stable' }
@@ -41,13 +41,14 @@ export function joursDeRetard(dernierJour: string, aujourdhui = new Date()): num
 
 /** Titre de la carte d'action, d'après la règle retenue par le serveur. */
 export const TITRES_ACTION: Record<CodeAction, string> = {
-  semer: 'Bon moment pour bouturer',
-  engorge: 'Attendez que le sol ressuie',
-  surface_seche: 'Sol trop sec pour bouturer',
-  sol_sec: 'Sol trop sec pour bouturer',
-  saison: 'Attendez le démarrage des pluies',
-  incertain: 'Bouturage risqué en ce moment',
-  indisponible: 'Évaluation indisponible',
+  // Le titre dit QUOI faire ; la phrase en dessous dit POURQUOI
+  semer: 'Vous pouvez planter',
+  engorge: 'Attendez avant de planter',
+  surface_seche: 'Attendez la pluie pour planter',
+  sol_sec: 'Attendez la pluie pour planter',
+  saison: 'Attendez le retour des pluies',
+  incertain: 'Prudence avant de planter',
+  indisponible: 'Pas de conseil pour le moment',
 }
 
 /** Ton de couleur de la carte d'action (mêmes couleurs que les verdicts). */
@@ -133,3 +134,41 @@ export function nuancer(hex: string, facteur: number): string {
   const [L, a, b] = hexVersOklab(hex)
   return oklabVersHex([Math.min(1, L * facteur), a, b])
 }
+
+// ── Phrases simples pour les 3 chiffres clés (les écarts viennent du serveur ; on ne fait que les dire avec des mots) ──
+
+/** Pluie comparée à d'habitude, d'après l'écart en % (mêmes seuils que lectureEcart côté serveur : ±30 %). */
+export function comparaisonPluie(ecart: number | null): string {
+  if (ecart === null) return 'Pas de comparaison possible.'
+  if (ecart < -30) return 'Beaucoup moins que d\'habitude.'
+  if (ecart < -10) return 'Un peu moins que d\'habitude.'
+  if (ecart <= 10) return 'Comme d\'habitude.'
+  if (ecart <= 30) return 'Un peu plus que d\'habitude.'
+  return 'Beaucoup plus que d\'habitude.'
+}
+
+/** Eau dans la terre comparée à d'habitude, d'après l'écart en points de %. */
+export function comparaisonEau(points: number | null): string {
+  if (points === null) return 'Pas de comparaison possible.'
+  if (Math.abs(points) < 5) return 'Comme d\'habitude.'
+  const sens = points > 0 ? 'plus' : 'moins'
+  return Math.abs(points) <= 15 ? `Un peu ${sens} d'eau que d'habitude.` : `Beaucoup ${sens} d'eau que d'habitude.`
+}
+
+/** Chaleur de la terre comparée à d'habitude (moins de 1 °C d'écart : comme d'habitude). */
+export function comparaisonChaleur(actuelle: number | null, normale: number | null): string {
+  if (actuelle === null || normale === null) return 'Pas de comparaison possible.'
+  const d = actuelle - normale
+  if (Math.abs(d) < 1) return 'Comme d\'habitude.'
+  return d > 0 ? 'Plus chaude que d\'habitude.' : 'Plus fraîche que d\'habitude.'
+}
+
+/** Ce que fait l'eau dans la terre depuis une semaine. */
+export const TENDANCE_EAU: Record<Tendance, string> = { hausse: 'La terre se mouille.', baisse: 'La terre sèche.', stable: 'Ça ne bouge pas.' }
+/** Ce que fait la chaleur de la terre depuis une semaine. */
+export const TENDANCE_CHALEUR: Record<Tendance, string> = { hausse: 'Elle monte.', baisse: 'Elle baisse.', stable: 'Elle ne bouge pas.' }
+
+/** 93.1 → « 93 mm » (arrondi : plus facile à lire) */
+export const millimetresArrondis = (n: number | null) => (n === null ? '—' : `${Math.round(n)} mm`)
+/** 24.55 → « 25 °C » */
+export const degresArrondis = (t: number | null) => (t === null ? '—' : `${Math.round(t)} °C`)

@@ -3,7 +3,7 @@
 // Hiérarchie : 1 décision (CarteAction), la coupe du sol, 3 indicateurs, puis le détail replié (30 jours).
 // Ordre sur téléphone : lieu, décision, coupe, indicateurs. Sur ordinateur : la coupe passe à droite.
 import Link from 'next/link'
-import { degres, ecartPourcentFr, millimetres, pointsFr, pourcent, tendanceFr } from '@/lib/etat-sol'
+import { comparaisonChaleur, comparaisonEau, comparaisonPluie, degresArrondis, millimetresArrondis, pourcent, TENDANCE_CHALEUR, TENDANCE_EAU } from '@/lib/etat-sol'
 import type { EtatSol } from '@/lib/types'
 import { nomCourt, useLieuSol, type LieuSol } from '@/lib/use-lieu-sol'
 import { NOM_AGENT } from '../agent/questions'
@@ -33,21 +33,25 @@ function Indicateur({ libelle, valeur, detail, aide }: { libelle: string; valeur
 function Indicateurs({ etat }: { etat: EtatSol }) {
   const racines = etat.couches.find((c) => c.nom === 'racines')
   const ecartRacines = racines && racines.indice !== null && racines.normale !== null ? Math.round((racines.indice - racines.normale) * 100) : null
+  const t = etat.tempSurface
   return (
-    <div data-visite="indicateurs" className="grid grid-cols-1 gap-2.5 min-[480px]:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-      <Indicateur
-        libelle="Eau au niveau des racines"
-        valeur={pourcent(racines?.indice ?? null)}
-        detail={`${tendanceFr(racines?.tendance7j ?? null)} · ${pointsFr(ecartRacines)}`}
-        aide={<Infobulle sujet="solRacines" />}
-      />
-      <Indicateur
-        libelle="Température de surface du sol"
-        valeur={degres(etat.tempSurface.actuelle)}
-        detail={`${tendanceFr(etat.tempSurface.tendance7j)} · normale ${degres(etat.tempSurface.normale)}`}
-        aide={<Infobulle sujet="tempSurface" />}
-      />
-      <Indicateur libelle="Pluie sur 7 jours" valeur={millimetres(etat.pluie7)} detail={ecartPourcentFr(etat.ecartPluie7)} aide={<Infobulle sujet="pluie7" />} />
+    <div data-visite="indicateurs" className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 gap-2.5 min-[480px]:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+        <Indicateur
+          libelle="Eau autour des racines"
+          valeur={pourcent(racines?.indice ?? null)}
+          detail={`${comparaisonEau(ecartRacines)}${racines?.tendance7j ? ` ${TENDANCE_EAU[racines.tendance7j]}` : ''}`}
+          aide={<Infobulle sujet="solRacines" />}
+        />
+        <Indicateur libelle="Pluie de la semaine" valeur={millimetresArrondis(etat.pluie7)} detail={comparaisonPluie(etat.ecartPluie7)} aide={<Infobulle sujet="pluie7" />} />
+        <Indicateur
+          libelle="Chaleur de la terre"
+          valeur={degresArrondis(t.actuelle)}
+          detail={`${comparaisonChaleur(t.actuelle, t.normale)}${t.tendance7j ? ` ${TENDANCE_CHALEUR[t.tendance7j]}` : ''}`}
+          aide={<Infobulle sujet="tempSurface" />}
+        />
+      </div>
+      <p className="m-0 text-[12px] text-muted">Eau en % : 0 % = terre toute sèche, 100 % = terre pleine d&apos;eau.</p>
     </div>
   )
 }
@@ -112,7 +116,7 @@ export default function AccueilProducteur() {
       {etat && (
         <details className="group rounded-3xl border border-line bg-surface">
           <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 font-display text-base font-semibold text-ink [&::-webkit-details-marker]:hidden">
-            Voir l&apos;évolution sur 30 jours
+            Voir les 30 derniers jours en graphiques
             <span aria-hidden="true" className="text-muted transition-transform duration-300 group-open:rotate-180 motion-reduce:transition-none">
               ⌄
             </span>

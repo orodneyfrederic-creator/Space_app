@@ -187,15 +187,15 @@ export type EntreeAction = {
 
 export type CodeAction = 'indisponible' | 'engorge' | 'surface_seche' | 'semer' | 'saison' | 'sol_sec' | 'incertain'
 
-/** La phrase affichée pour chaque code d'action. */
+/** La phrase affichée pour chaque code d'action : français de tous les jours, une seule consigne. */
 export const TEXTES_ACTION: Record<CodeAction, string> = {
-  indisponible: "Données NASA indisponibles pour l'instant : réessayez plus tard.",
-  engorge: "Sol gorgé d'eau : évitez de travailler la terre, risque de pourriture des boutures.",
-  surface_seche: "Sol sec en surface : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer.",
-  semer: 'Conditions réunies : vous pouvez semer ou bouturer cette semaine.',
-  saison: "La saison des pluies n'a pas encore démarré : attendez avant de semer ou de bouturer.",
-  sol_sec: "Sol trop sec au niveau des racines : attendez une pluie d'au moins 20 mm sur 3 jours avant de bouturer.",
-  incertain: 'Conditions incertaines : attendez quelques jours de pluies régulières avant de bouturer.',
+  indisponible: "Les chiffres de la NASA ne sont pas arrivés. Réessayez plus tard.",
+  engorge: 'La terre est trop mouillée. Ne plantez pas et ne retournez pas la terre pour le moment : les boutures pourriraient.',
+  surface_seche: "Le dessus de la terre est sec. Attendez une bonne pluie (au moins 20 mm en 3 jours) avant de planter.",
+  semer: "La terre a assez d'eau et les pluies sont là. Vous pouvez planter vos boutures cette semaine.",
+  saison: "Les pluies n'ont pas encore vraiment commencé. Attendez avant de planter.",
+  sol_sec: "La terre est trop sèche autour des racines. Attendez une bonne pluie (au moins 20 mm en 3 jours) avant de planter.",
+  incertain: 'Les pluies ne sont pas régulières. Attendez quelques jours de pluie régulière avant de planter.',
 }
 
 /**
