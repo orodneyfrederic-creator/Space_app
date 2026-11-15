@@ -15,7 +15,8 @@ import { deconnecter } from '@/lib/api'
 import { useSession } from '@/lib/session'
 import { IcoChevron, IcoEtoile, IcoFermer } from '../landing/icones'
 import Logo from './Logo'
-import { BIENTOT, CENTRE_AIDE, estPageActive, EVENEMENT_OUVRIR_MENU, MES_DONNEES, PARAMETRES, QUOTIDIEN, type PageMenu, type Rubrique } from './menu'
+import { useProfil } from '@/lib/profil'
+import { BIENTOT, estPageActive, EVENEMENT_OUVRIR_MENU, menuPour, type PageMenu, type Rubrique } from './menu'
 
 type ProprietesEntree = {
   page: PageMenu
@@ -134,6 +135,7 @@ function BlocBientot({ chemin, ouvert, surBascule }: { chemin: string | null; ou
 function Contenu({ chemin, surFermeture }: { chemin: string | null; surFermeture?: () => void }) {
   // Rubrique dépliée par la personne ; sinon, celle qui contient la page en cours.
   const [bascules, setBascules] = useState<Record<string, boolean>>({})
+  const menu = menuPour(useProfil())
   const estOuverte = (r: Rubrique) => bascules[r.id] ?? (chemin !== null && r.pages.some((p) => estPageActive(chemin, p)))
   const basculer = (r: Rubrique) => setBascules((b) => ({ ...b, [r.id]: !estOuverte(r) }))
   // « Bientôt disponible » : replié, sauf si la page en cours en fait partie
@@ -163,21 +165,27 @@ function Contenu({ chemin, surFermeture }: { chemin: string | null; surFermeture
       <nav aria-label="Navigation principale" className="sidebar-defilement flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         <TitreSection>Au quotidien</TitreSection>
         <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-          {QUOTIDIEN.map((e) => (
+          {menu.quotidien.map((e) => (
             <li key={e.href}>
               <Entree page={e} chemin={chemin} icone={<e.icone taille={18} />} miseEnAvant={e.miseEnAvant} />
             </li>
           ))}
         </ul>
 
-        <TitreSection>Mes données</TitreSection>
-        <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-          {MES_DONNEES.map((r) => (
-            <GroupeRubrique key={r.id} rubrique={r} chemin={chemin} ouvert={estOuverte(r)} surBascule={() => basculer(r)} badgeAVenir />
-          ))}
-        </ul>
+        {menu.mesDonnees.length > 0 && (
+          <>
+            <TitreSection>Mes données</TitreSection>
+            <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+              {menu.mesDonnees.map((r) => (
+                <GroupeRubrique key={r.id} rubrique={r} chemin={chemin} ouvert={estOuverte(r)} surBascule={() => basculer(r)} badgeAVenir />
+              ))}
+            </ul>
+          </>
+        )}
 
-        <BlocBientot chemin={chemin} ouvert={bientotOuvert} surBascule={() => setBascules((b) => ({ ...b, bientot: !bientotOuvert }))} />
+        {menu.bientot.length > 0 && (
+          <BlocBientot chemin={chemin} ouvert={bientotOuvert} surBascule={() => setBascules((b) => ({ ...b, bientot: !bientotOuvert }))} />
+        )}
       </nav>
 
       <div className="flex flex-col gap-0.5 border-t border-white/10 px-3 py-3">
@@ -186,9 +194,9 @@ function Contenu({ chemin, surFermeture }: { chemin: string | null; surFermeture
           <span className="text-menthe-pale/80"><IcoVisite /></span>
           Visite guidée
         </BoutonVisite>
-        <Entree page={CENTRE_AIDE} chemin={chemin} icone={<CENTRE_AIDE.icone taille={18} />} />
+        {menu.aide && <Entree page={menu.aide} chemin={chemin} icone={<menu.aide.icone taille={18} />} />}
         <ul className="m-0 list-none p-0">
-          <GroupeRubrique rubrique={PARAMETRES} chemin={chemin} ouvert={estOuverte(PARAMETRES)} surBascule={() => basculer(PARAMETRES)} />
+          <GroupeRubrique rubrique={menu.parametres} chemin={chemin} ouvert={estOuverte(menu.parametres)} surBascule={() => basculer(menu.parametres)} />
         </ul>
         <BlocCompte />
       </div>

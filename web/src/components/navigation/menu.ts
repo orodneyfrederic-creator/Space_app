@@ -6,6 +6,7 @@
 // La sidebar présente ces pages en trois blocs (voir plus bas) : QUOTIDIEN, MES_DONNEES et BIENTOT.
 // RUBRIQUES reste la source complète (adresses des pages à venir et suggestions « Déjà disponible »).
 import type { ComponentType } from 'react'
+import type { Profil } from '@/lib/types'
 import { NOM_AGENT } from '../agent/questions'
 import {
   IcoAide,
@@ -30,6 +31,8 @@ export type PageMenu = {
   aVenir?: boolean
   /** Chemins qui rendent l'entrée active (par défaut : son href et ses sous-pages). */
   correspond?: readonly string[]
+  /** Profils qui voient l'entrée (absent : tous les profils). */
+  profils?: readonly Profil[]
 }
 
 export type Rubrique = {
@@ -67,7 +70,9 @@ export const QUOTIDIEN: readonly EntreeDirecte[] = [
     icone: IcoBulle,
     miseEnAvant: true,
   },
-  { titre: 'Carte des sites', href: '/carte', description: 'Les sites suivis et leur verdict de semis, en 2D ou en 3D.', correspond: ['/carte', '/parcelles'], icone: IcoCarte },
+  { titre: 'Carte des sites', href: '/carte', description: 'Les sites suivis et leur verdict de semis, en 2D ou en 3D.', correspond: ['/carte', '/parcelles'], icone: IcoCarte, profils: ['conseiller', 'organisation'] },
+  // Producteur : son sol en accès direct (les autres profils le trouvent dans « Mes données »)
+  { titre: 'Mon sol', href: '/soil', description: 'Vos analyses de sol, l’humidité suivie par la NASA et vos amendements.', correspond: ['/soil'], icone: IcoCouches, profils: ['producteur'] },
   { titre: 'Mes cultures', href: '/cultures', description: 'Repères et questions par culture.', icone: IcoGraine },
   { titre: 'Mes conseils', href: '/historique', description: 'Les conseils déjà donnés, sur le web et Telegram.', icone: IcoHorloge },
 ]
@@ -174,7 +179,7 @@ export const PARAMETRES: Rubrique = {
   titre: 'Paramètres',
   icone: IcoReglages,
   pages: [
-    aVenir('Mon profil', '/parametres/profil', 'Votre nom, vos coordonnées et votre mot de passe.'),
+    { titre: 'Mon profil', href: '/parametres/profil', description: 'Votre nom, votre numéro et votre profil (producteur, conseiller, organisation).' },
     aVenir('Mon exploitation', '/parametres/exploitation', 'Le nom, la localisation et les parcelles de votre exploitation.'),
     aVenir('Préférences', '/parametres/preferences', 'Langue, unités et notifications.'),
   ],
@@ -228,4 +233,35 @@ export function adressesAVenir(): { rubrique: string; page: string }[] {
     .map((p) => p.href.split('/').filter(Boolean))
     .filter((segments): segments is [string, string] => segments.length === 2)
     .map(([rubrique, page]) => ({ rubrique, page }))
+}
+
+// ── Menu selon le profil ──
+
+const visible = (profil: Profil) => (p: PageMenu) => !p.profils || p.profils.includes(profil)
+
+export type MenuProfil = {
+  quotidien: readonly EntreeDirecte[]
+  mesDonnees: readonly Rubrique[]
+  bientot: readonly Rubrique[]
+  parametres: Rubrique
+  aide: (PageMenu & { icone: Rubrique['icone'] }) | null
+}
+
+/**
+ * Producteur : seulement ce qui sert son champ (Accueil, Mbolo, Mon sol, Mes cultures, Mes conseils, Paramètres),
+ * sans aucune page « à venir ». Conseiller et organisation : en plus la carte des sites, l'historique climatique
+ * et les pages en préparation.
+ */
+export function menuPour(profil: Profil): MenuProfil {
+  const quotidien = QUOTIDIEN.filter(visible(profil))
+  if (profil === 'producteur') {
+    return {
+      quotidien,
+      mesDonnees: [],
+      bientot: [],
+      parametres: { ...PARAMETRES, pages: PARAMETRES.pages.filter((p) => !p.aVenir) },
+      aide: null,
+    }
+  }
+  return { quotidien, mesDonnees: MES_DONNEES, bientot: BIENTOT, parametres: PARAMETRES, aide: CENTRE_AIDE }
 }

@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { empreinteLeurre, hacherMotDePasse, verifierMotDePasse } from '../auth/mot-de-passe.js'
 import { MESSAGE_TELEPHONE, MESSAGE_TELEPHONE_VIDE, normaliserTelephone } from '../auth/telephone.js'
 import { SITES } from '../context/sites.js'
-import { creerUtilisateur, TelephoneDejaPris, trouverParId, trouverParTelephone } from '../db/utilisateurs.js'
+import { creerUtilisateur, majCompte, TelephoneDejaPris, trouverParId, trouverParTelephone } from '../db/utilisateurs.js'
 import type { ReponseAuth, Utilisateur } from '../types/api.js'
 import { premierMessage } from './guardrails.js'
 
@@ -64,7 +64,15 @@ const SchemaInscription = z.object({
     .string()
     .refine((id) => SITES.some((s) => s.id === id), 'Ville inconnue.')
     .optional(),
+  profil: z.enum(['producteur', 'conseiller', 'organisation'], { error: 'Profil inconnu.' }).optional(),
 })
+
+const SchemaMajCompte = z
+  .object({
+    profil: z.enum(['producteur', 'conseiller', 'organisation'], { error: 'Profil inconnu.' }).optional(),
+    siteId: z.string().refine((id) => SITES.some((s) => s.id === id), 'Ville inconnue.').optional(),
+  })
+  .refine((d) => d.profil !== undefined || d.siteId !== undefined, 'Rien à modifier : indiquez un profil ou une ville.')
 
 const SchemaConnexion = z.object({
   telephone: Telephone,
@@ -140,7 +148,7 @@ export function routesAuth(adresseIp: (c: Context) => string) {
     const empreinte = await hacherMotDePasse(d.motDePasse)
     let utilisateur: Utilisateur
     try {
-      utilisateur = await base(() => creerUtilisateur({ nom: d.nom, telephone: d.telephone, siteId: d.siteId ?? null, empreinte }))
+      utilisateur = await base(() => creerUtilisateur({ nom: d.nom, telephone: d.telephone, siteId: d.siteId ?? null, empreinte, profil: d.profil ?? 'producteur' }))
     } catch (erreur) {
       if (erreur instanceof TelephoneDejaPris) {
         throw new HTTPException(409, { message: 'Ce numéro a déjà un compte. Connectez-vous avec votre mot de passe.' })
@@ -163,6 +171,14 @@ export function routesAuth(adresseIp: (c: Context) => string) {
   auth.get('/moi', exigerCompte, async (c) => {
     const utilisateur = await base(() => trouverParId(c.get('utilisateurId')))
     if (!utilisateur) throw new HTTPException(401, { message: 'Ce compte n\'existe plus. Créez un nouveau compte.' })
+    return c.json<Utilisateur>(utilisateur)
+  })
+
+  // Changer de profil ou de ville (page Paramètres)
+  auth.patch('/moi', exigerCompte, async (c) => {
+    const d = await lireCorps(c, SchemaMajCompte)
+    const utilisateur = await base(() => majCompte(c.get('utilisateurId'), d))
+    if (!utilisateur) throw new HTTPException(401, { message: "Ce compte n'existe plus. Créez un nouveau compte." })
     return c.json<Utilisateur>(utilisateur)
   })
 

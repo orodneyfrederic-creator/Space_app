@@ -54,12 +54,16 @@ export type Conseil = {
 // ── Comptes des producteurs (téléphone + mot de passe) ──
 // Les routes /conseil, /voix et /conseils demandent l'en-tête « Authorization: Bearer <jeton> ».
 
+/** Profil professionnel : le tableau de bord et le menu s'adaptent. */
+export type Profil = 'producteur' | 'conseiller' | 'organisation'
+
 export type Utilisateur = {
   id: string
   nom: string
   telephone: string // +2410XXXXXXXX
   siteId: string | null // ville S'STACK choisie à l'inscription
   telegramLie: boolean // vrai si le bot Telegram est relié à ce compte
+  profil: Profil
 }
 
 export type DemandeInscription = {
@@ -67,7 +71,10 @@ export type DemandeInscription = {
   telephone: string // numéro gabonais, écrit librement (« 077 12 34 56 », « +241 77 12 34 56 »…)
   motDePasse: string // 8 à 72 caractères
   siteId?: string // id d'un Site
+  profil?: Profil // « producteur » par défaut
 }
+
+export type DemandeMajCompte = { profil?: Profil; siteId?: string }
 
 export type DemandeConnexion = { telephone: string; motDePasse: string }
 

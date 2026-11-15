@@ -19,7 +19,7 @@ export const JETON_LOCAL = 'mode-local-sans-compte'
 
 export const SESSION_LOCALE: ReponseAuth = {
   jeton: JETON_LOCAL,
-  utilisateur: { id: 'local', nom: 'Mode local (sans compte)', telephone: '+241000000000', siteId: 'tchibanga', telegramLie: false },
+  utilisateur: { id: 'local', nom: 'Mode local (sans compte)', telephone: '+241000000000', siteId: 'tchibanga', telegramLie: false, profil: 'producteur' },
 }
 
 // Dernière lecture : useSyncExternalStore exige le même objet tant que rien n'a changé

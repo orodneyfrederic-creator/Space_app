@@ -1,10 +1,11 @@
 // Comptes des producteurs : table public.utilisateurs (supabase/migrations/002_utilisateurs.sql).
 // L'empreinte du mot de passe ne sort jamais de ce fichier vers le client.
 import { z } from 'zod'
-import type { Utilisateur } from '../types/api.js'
+import type { Profil, Utilisateur } from '../types/api.js'
 import { getClient } from './supabase.js'
 
-const COLONNES = 'id, nom, telephone, site_id, telegram_id, mot_de_passe'
+// « * » plutôt qu'une liste : la colonne profil (migration 005) peut ne pas exister encore
+const COLONNES = '*'
 
 const Ligne = z.object({
   id: z.string(),
@@ -13,6 +14,7 @@ const Ligne = z.object({
   site_id: z.string().nullable(),
   telegram_id: z.number().nullable(),
   mot_de_passe: z.string(),
+  profil: z.enum(['producteur', 'conseiller', 'organisation']).optional().default('producteur'),
 })
 type Ligne = z.infer<typeof Ligne>
 
@@ -33,6 +35,7 @@ const versUtilisateur = (l: Ligne): Utilisateur => ({
   telephone: l.telephone,
   siteId: l.site_id,
   telegramLie: l.telegram_id !== null,
+  profil: l.profil,
 })
 
 async function unSeul(colonne: 'id' | 'telephone' | 'telegram_id', valeur: string | number): Promise<CompteAvecEmpreinte | null> {
@@ -47,10 +50,13 @@ export const trouverParTelephone = (telephone: string) => unSeul('telephone', te
 export const trouverParId = async (id: string) => (await unSeul('id', id))?.utilisateur ?? null
 export const trouverParTelegram = async (telegramId: number) => (await unSeul('telegram_id', telegramId))?.utilisateur ?? null
 
-export async function creerUtilisateur(compte: { nom: string; telephone: string; siteId: string | null; empreinte: string }): Promise<Utilisateur> {
+export async function creerUtilisateur(compte: { nom: string; telephone: string; siteId: string | null; empreinte: string; profil: Profil }): Promise<Utilisateur> {
+  // Le profil n'est écrit que s'il diffère du défaut : l'inscription marche même sans la migration 005
+  const ligne = { nom: compte.nom, telephone: compte.telephone, site_id: compte.siteId, mot_de_passe: compte.empreinte }
+  const avecProfil = { ...ligne, profil: compte.profil }
   const { data, error } = await client()
     .from('utilisateurs')
-    .insert({ nom: compte.nom, telephone: compte.telephone, site_id: compte.siteId, mot_de_passe: compte.empreinte })
+    .insert(compte.profil === 'producteur' ? ligne : avecProfil)
     .select(COLONNES)
     .single()
   if (error?.code === '23505') throw new TelephoneDejaPris()
@@ -62,6 +68,16 @@ export async function creerUtilisateur(compte: { nom: string; telephone: string;
 export async function changerSite(utilisateurId: string, siteId: string): Promise<void> {
   const { error } = await client().from('utilisateurs').update({ site_id: siteId }).eq('id', utilisateurId)
   if (error) throw new Error(`Changement de ville impossible : ${error.message}`)
+}
+
+/** Change le profil et/ou la ville du compte. */
+export async function majCompte(utilisateurId: string, maj: { profil?: Profil; siteId?: string }): Promise<Utilisateur | null> {
+  const champs: Record<string, string> = {}
+  if (maj.profil) champs.profil = maj.profil
+  if (maj.siteId) champs.site_id = maj.siteId
+  const { error } = await client().from('utilisateurs').update(champs).eq('id', utilisateurId)
+  if (error) throw new Error(`Mise à jour du compte impossible (migration 005 exécutée ?) : ${error.message}`)
+  return trouverParId(utilisateurId)
 }
 
 /** Relie un compte Telegram à un producteur (en le détachant d'un éventuel ancien compte). */

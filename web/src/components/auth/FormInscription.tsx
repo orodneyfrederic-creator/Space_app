@@ -1,5 +1,5 @@
 'use client'
-// Formulaire d'inscription : nom, numéro de téléphone, ville, mot de passe (POST /api/auth/inscription).
+// Formulaire d'inscription : nom, numéro de téléphone, profil, ville, mot de passe (POST /api/auth/inscription).
 // En cas de succès : session gardée, ville retenue pour le tableau de bord, puis page /bienvenue
 // (qui présente le bot Telegram).
 import Link from 'next/link'
@@ -8,7 +8,9 @@ import { useState } from 'react'
 import { ErreurApi, getSites, inscrire } from '@/lib/api'
 import { SITE_PAR_DEFAUT, useSiteChoisi } from '@/lib/site-choisi'
 import { useApi } from '@/lib/use-api'
+import type { Profil } from '@/lib/types'
 import ChampMotDePasse from './ChampMotDePasse'
+import ChoixProfil from './ChoixProfil'
 import { AIDE_TELEPHONE, CLASSE_BOUTON_PRINCIPAL, CLASSE_CHAMP, Etiquette, MessageErreur } from './formulaire'
 
 export default function FormInscription() {
@@ -17,6 +19,7 @@ export default function FormInscription() {
   const sites = useApi(getSites, 'sites')
   const [envoi, setEnvoi] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
+  const [profil, setProfil] = useState<Profil>('producteur')
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,7 +33,7 @@ export default function FormInscription() {
           setErreur(null)
           setEnvoi(true)
           try {
-            await inscrire({ nom: texte('nom'), telephone: texte('telephone'), motDePasse: texte('motDePasse'), ...(site ? { siteId: site } : {}) })
+            await inscrire({ nom: texte('nom'), telephone: texte('telephone'), motDePasse: texte('motDePasse'), profil, ...(site ? { siteId: site } : {}) })
             if (site) choisir(site)
             router.push('/bienvenue')
           } catch (err) {
@@ -60,6 +63,7 @@ export default function FormInscription() {
             {AIDE_TELEPHONE}. Utilisez le numéro de votre compte Telegram : vous pourrez aussi poser vos questions au bot.
           </p>
         </div>
+        <ChoixProfil name="profil" valeur={profil} onChange={setProfil} />
         <div className="flex flex-col gap-2">
           <Etiquette htmlFor="inscription-site">Site le plus proche de vos champs</Etiquette>
           <select

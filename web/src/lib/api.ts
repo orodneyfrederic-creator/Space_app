@@ -11,6 +11,7 @@ import type {
   DemandeConnexion,
   DemandeConseil,
   DemandeInscription,
+  DemandeMajCompte,
   EtatSol,
   FicheComplete,
   ReponseAgent,
@@ -121,6 +122,10 @@ export async function connecter(demande: DemandeConnexion): Promise<ReponseAuth>
 export const getMoi = () => appeler<Utilisateur>('/api/auth/moi')
 
 export const deconnecter = () => effacerSession()
+
+/** Change le profil ou la ville du compte connecté. */
+export const majCompte = (maj: DemandeMajCompte) =>
+  appeler<Utilisateur>('/api/auth/moi', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(maj) })
 
 // ── Intelligence des sols (/soil) ──
 
