@@ -3,7 +3,7 @@
 Lu automatiquement par Claude Code. Le guide complet pour les humains est dans `README.md`.
 
 ## Le projet en bref
-Agent conseiller pour les producteurs gabonais (manioc, plantain) : **quand semer**, à partir de NASA POWER + SoilGrids.
+Agent conseiller pour les producteurs gabonais (manioc, plantain) : **quand semer**, à partir de NASA POWER + SoilGrids (et des prévisions Open-Meteo à 7 jours pour les alertes du dashboard).
 Canaux : site web (`web/`) et bot Telegram (`server/src/bot/`), en texte et en voix. Zone pilote : Tchibanga (Nyanga), 8 villes en tout.
 Équipe en hackathon (48 h) : privilégier ce qui marche pour la démo, et livrer des changements petits et vérifiés.
 

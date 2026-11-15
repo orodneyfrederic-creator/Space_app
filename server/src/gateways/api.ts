@@ -5,13 +5,15 @@ import { Hono, type Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 import { repondreClimat } from '../agents/climat.js'
+import { construireConseilsJour } from '../context/conseils-jour.js'
 import { etatSolPosition, resumeSite } from '../context/etat-sol.js'
+import { getPrevisions, SOURCE_PREVISIONS } from '../context/previsions.js'
 import { ficheParcelle } from '../context/fiche-parcelle.js'
 import { codeMois, debutSaisonCourante } from '../context/indicateurs.js'
 import { getClimatologie, getQuotidien, type Jour } from '../context/nasa-power.js'
 import { SITES } from '../context/sites.js'
 import { enregistrerConseil, listerConseils } from '../db/supabase.js'
-import type { ApercuSite, Conseil, DemandeConseil, EtatSol, FicheComplete, ResumeEtatSol, PointPluie, ReponseAgent, Site } from '../types/api.js'
+import type { ApercuSite, Conseil, ConseilsJour, DemandeConseil, EtatSol, FicheComplete, ResumeEtatSol, PointPluie, ReponseAgent, Site } from '../types/api.js'
 import { exigerCompte, routesAuth, type VariablesAuth } from './auth.js'
 import { autoriserAppel, premierMessage, SchemaDemandeConseil } from './guardrails.js'
 import { routesSols } from './sols.js'
@@ -116,6 +118,29 @@ api.get('/fiche', async (c) => {
 // Résumé de l'état du sol des 8 sites (accueils conseiller et organisation), en parallèle avec le cache NASA.
 // Un site en échec n'empêche pas les autres de répondre.
 api.get('/etat-sol/sites', async (c) => c.json<ResumeEtatSol[]>(await Promise.all(SITES.map(resumeSite))))
+
+// Conseils du jour du producteur : état de la terre en mots simples, prévisions 7 jours (Open-Meteo), alertes, plan.
+// Si Open-Meteo ne répond pas, les conseils restent calculés avec la NASA seule (previsions: null).
+const RequeteConseilsJour = RequetePosition.extend({ culture: z.enum(['manioc', 'plantain']).default('manioc') })
+api.get('/conseils-jour', async (c) => {
+  const p = RequeteConseilsJour.safeParse(c.req.query())
+  if (!p.success) requeteInvalide('Paramètres attendus : lat, lon et culture (manioc ou plantain).')
+  const { lat, lon, culture } = p.data
+  let etat: EtatSol
+  try {
+    etat = await etatSolPosition(lat, lon)
+  } catch (erreur) {
+    console.error('[api] conseils du jour : NASA indisponible :', erreur)
+    throw new HTTPException(503, { message: 'Les données de la NASA sont momentanément indisponibles. Réessayez dans un instant.' })
+  }
+  const jours = await getPrevisions(lat, lon).catch((erreur: unknown) => {
+    console.error('[api] prévisions Open-Meteo indisponibles :', erreur)
+    return null
+  })
+  // Aujourd'hui à Libreville (UTC+1)
+  const aujourdhui = jours?.[0]?.date ?? new Date(Date.now() + 3_600_000).toISOString().slice(0, 10)
+  return c.json<ConseilsJour>(construireConseilsJour(etat, jours, culture, aujourdhui, SOURCE_PREVISIONS))
+})
 
 // Résumé d'un point placé par le conseiller (mêmes champs que /etat-sol/sites)
 api.get('/etat-sol/resume', async (c) => {

@@ -202,3 +202,43 @@ export type ResumeEtatSol = {
   pluie30: number | null
   alerte: NiveauAlerte
 }
+
+// ── Conseils du jour (GET /api/conseils-jour) : état de la terre en mots simples, prévisions, alertes, plan ──
+
+export type Culture = 'manioc' | 'plantain'
+
+export type PrevisionJour = {
+  date: string // AAAA-MM-JJ
+  pluie: number | null // mm prévus
+  probaPluie: number | null // % de chances de pluie
+  tmax: number | null // °C
+  tmin: number | null // °C
+}
+
+export type TypeAlerte = 'chaleur' | 'forte_pluie' | 'secheresse' | 'engorgement' | 'pluie_utile'
+
+export type AlerteMeteo = {
+  type: TypeAlerte
+  niveau: 'danger' | 'attention' | 'bonne_nouvelle'
+  titre: string // « Vague de chaleur »
+  quand: string // « jeudi 19 et vendredi 20 nov. »
+  message: string // une phrase simple
+  gestes: string[] // 2 à 3 gestes, dans l'ordre
+}
+
+export type EtatTerreSimple = {
+  ton: 'seche' | 'bonne' | 'mouillee' | 'inconnu'
+  titre: string // « Votre terre est gorgée d'eau »
+  phrase: string // ce que ça veut dire, en une ou deux phrases
+}
+
+export type EtapePlan = { quand: string; geste: string }
+
+export type ConseilsJour = {
+  culture: Culture
+  etatTerre: EtatTerreSimple
+  previsions: { source: string; jours: PrevisionJour[] } | null // null si les prévisions sont indisponibles
+  prochainePluie: string // « Prochaine pluie : demain, environ 17 mm. »
+  alertes: AlerteMeteo[] // les plus urgentes d'abord
+  plan: EtapePlan[] // le plan de la semaine, dans l'ordre
+}

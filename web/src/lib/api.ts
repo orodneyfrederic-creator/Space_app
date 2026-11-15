@@ -8,6 +8,8 @@ import type {
   HumiditeSol,
   ApercuSite,
   Conseil,
+  ConseilsJour,
+  Culture,
   DemandeConnexion,
   DemandeConseil,
   DemandeInscription,
@@ -134,6 +136,10 @@ export const majCompte = (maj: DemandeMajCompte) =>
 /** État du sol à une position (3 couches, température de surface, verdict, phrase d'action). */
 export const getEtatSol = (lat: number, lon: number) =>
   appeler<EtatSol>(`/api/etat-sol?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`)
+
+/** Conseils du jour : état de la terre en mots simples, prévisions 7 jours, alertes et plan de la semaine. */
+export const getConseilsJour = (lat: number, lon: number, culture: Culture) =>
+  appeler<ConseilsJour>(`/api/conseils-jour?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&culture=${culture}`)
 
 /** Résumé de l'état du sol des 8 sites (accueils conseiller et organisation). */
 export const getResumesSites = () => appeler<ResumeEtatSol[]>('/api/etat-sol/sites')

@@ -29,6 +29,21 @@ const ETAPES: readonly Etape[] = [
     texte: 'Le grand titre vous dit quoi faire cette semaine. Vert : allez-y. Jaune : attention. Brun : mieux vaut attendre. La phrase en dessous explique pourquoi.',
   },
   {
+    cible: 'alertes',
+    titre: 'Les alertes des prochains jours',
+    texte: 'Chaleur forte, grosse pluie, jours sans pluie : chaque alerte dit quand, et ce que vous pouvez faire, dans l’ordre.',
+  },
+  {
+    cible: 'plan',
+    titre: 'Votre plan, étape par étape',
+    texte: 'Suivez les étapes dans l’ordre : aujourd’hui, puis les prochains jours.',
+  },
+  {
+    cible: 'previsions',
+    titre: 'La météo de la semaine',
+    texte: 'Pour chaque jour : la chaleur la plus forte en haut, la pluie prévue en bas. Les cases jaunes annoncent de la forte chaleur.',
+  },
+  {
     cible: 'coupe',
     titre: 'Votre sol, couche par couche',
     texte: 'Plus il y a de gouttes et de bleu, plus la terre est mouillée. Le haut est la surface, le milieu la zone des racines, le bas la profondeur. « Rejouer le mois » montre les 30 derniers jours.',

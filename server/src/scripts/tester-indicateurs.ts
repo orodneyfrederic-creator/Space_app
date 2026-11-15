@@ -1,6 +1,7 @@
 // Tests des fonctions pures de l'état du sol, avec des séries fabriquées à la main (aucun appel réseau).
 // Lancer : npx tsx src/scripts/tester-indicateurs.ts
 import assert from 'node:assert/strict'
+import { alertes, construireConseilsJour, jourFr, prochainePluie } from '../context/conseils-jour.js'
 import { construireEtatSol } from '../context/etat-sol.js'
 import {
   actionRecommandee,
@@ -15,6 +16,7 @@ import {
 } from '../context/indicateurs.js'
 import { MOIS, type Climatologie, type CodeMois, type Jour } from '../context/nasa-power.js'
 import { distanceKm, siteLePlusProche } from '../context/sites.js'
+import type { PrevisionJour } from '../types/api.js'
 
 let reussis = 0
 function test(nom: string, f: () => void): void {
@@ -128,6 +130,40 @@ test('aucune donnée publiée', () => {
   assert.equal(e.verdict, null)
   assert.equal(e.serie.length, 0)
   assert.equal(e.codeAction, 'indisponible')
+})
+
+console.log('conseils du jour (prévisions)')
+const prev = (pluies: number[], tmax: number[]): PrevisionJour[] =>
+  pluies.map((p, i) => ({ date: `2026-11-${String(15 + i).padStart(2, '0')}`, pluie: p, probaPluie: 90, tmax: tmax[i] ?? 30, tmin: 22 }))
+const etatTest = construireEtatSol(-2.85, 11.02, jours, climato, new Date(Date.UTC(2026, 10, 12)))
+test('dates en français', () => {
+  assert.equal(jourFr('2026-11-15', '2026-11-15'), "aujourd'hui")
+  assert.equal(jourFr('2026-11-16', '2026-11-15'), 'demain')
+  assert.equal(jourFr('2026-11-19', '2026-11-15'), 'jeudi 19 nov.')
+})
+test('vague de chaleur : 2 jours à 33 °C ou plus', () => {
+  const a = alertes(etatTest, prev([0, 5, 5, 5, 5, 5, 5], [30, 34, 36, 31, 30, 30, 30]), 'manioc', '2026-11-15')
+  const c = a.find((x) => x.type === 'chaleur')
+  assert.equal(c?.niveau, 'danger')
+  assert.equal(c?.quand, 'de demain à mardi 17 nov.')
+})
+test('un seul jour chaud : pas de vague', () => {
+  assert.equal(alertes(etatTest, prev([5, 5, 5, 5, 5, 5, 5], [34, 30, 30, 30, 30, 30, 30]), 'manioc', '2026-11-15').some((x) => x.type === 'chaleur'), false)
+})
+test('forte pluie et jours secs', () => {
+  const a = alertes(etatTest, prev([0, 0, 0, 0, 0, 35, 2], [30, 30, 30, 30, 30, 30, 30]), 'plantain', '2026-11-15')
+  assert.ok(a.some((x) => x.type === 'forte_pluie'))
+  assert.ok(a.some((x) => x.type === 'secheresse'))
+})
+test('prochaine pluie', () => {
+  assert.match(prochainePluie(prev([0, 0, 12, 0, 0, 0, 0], [30, 30, 30, 30, 30, 30, 30]), '2026-11-15'), /mardi 17 nov\., environ 12 mm/)
+  assert.match(prochainePluie(null, '2026-11-15'), /indisponibles/)
+})
+test('sans prévisions : conseils quand même', () => {
+  const c = construireConseilsJour(etatTest, null, 'manioc', '2026-11-15', 'test')
+  assert.equal(c.previsions, null)
+  assert.equal(c.plan[0]?.quand, "Aujourd'hui")
+  assert.match(c.etatTerre.titre, /terre/)
 })
 
 console.log(`\n${reussis} tests réussis.`)

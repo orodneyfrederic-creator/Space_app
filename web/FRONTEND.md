@@ -170,3 +170,9 @@ Tout est en CSS (`src/app/globals.css`) + un petit hook ; **aucune bibliothèque
 - En bas de chaque page, `navigation/EtapeSuivante.tsx` (posé dans `app/(app)/layout.tsx`) propose la page suivante : Dashboard → Mes graphiques → Mon sol → Mes cultures → Mbolo → Mes conseils → Dashboard. Pour ajouter une page au parcours : une ligne dans `suitePour()`.
 - Barre d'onglets (téléphone, `navigation/liens.ts`) : Dashboard, Graphiques, Cultures, Mbolo, Menu.
 
+## Dashboard du producteur : conseils du jour
+
+- `GET /api/conseils-jour?lat&lon&culture=manioc|plantain` (`server/src/context/conseils-jour.ts`, fonctions pures testées) : état de la terre en mots simples, prochaine pluie, alertes (vague de chaleur ≥ 33 °C deux jours de suite, forte pluie ≥ 30 mm, 5 jours sans pluie, terre gorgée d'eau, pluie utile) avec 2 à 3 gestes chacune, et le plan de la semaine. Seuils [À VALIDER] en tête du fichier.
+- Prévisions 7 jours : **Open-Meteo** (`server/src/context/previsions.ts`, gratuit, sans clé, cache 3 h). NASA POWER ne prévoit pas : il sert à l'état actuel du sol. Si Open-Meteo ne répond pas, les conseils restent calculés avec la NASA seule.
+- Culture choisie sur le dashboard, gardée sur l'appareil (`lib/culture.ts`, clé `sstack:culture`). Blocs dans `components/accueil/ConseilsJour.tsx`.
+
