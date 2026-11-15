@@ -32,7 +32,7 @@ export default async function PageParcelle({ params }: PageProps<'/parcelles/[id
       <CarteFiche fiche={FICHE_DEMO_TCHIBANGA} />
       <GraphiquePluie points={PLUIE_DEMO} />
       <Link
-        href="/discuter"
+        href={`/assistant?parcelle=${parcelle.id}`}
         className="mt-auto flex min-h-[52px] items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-white no-underline hover:bg-accent-hover"
       >
         Demander conseil pour cette parcelle

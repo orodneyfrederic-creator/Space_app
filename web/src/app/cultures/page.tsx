@@ -46,7 +46,7 @@ export default function Cultures() {
       </ul>
 
       <Link
-        href="/discuter"
+        href="/assistant"
         className="mt-auto flex min-h-[52px] items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-white no-underline hover:bg-accent-hover"
       >
         Pourquoi ces choix ? Demander à l&apos;agent

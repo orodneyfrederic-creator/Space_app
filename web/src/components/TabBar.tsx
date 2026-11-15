@@ -9,7 +9,7 @@ const tabs = [
   { href: "/carte", label: "Carte", icon: MapIcon, match: ["/carte", "/parcelles"] },
   { href: "/donnees", label: "Données", icon: ChartIcon, match: ["/donnees"] },
   { href: "/cultures", label: "Cultures", icon: SproutIcon, match: ["/cultures"] },
-  { href: "/discuter", label: "Agent", icon: ChatIcon, match: ["/discuter", "/assistant", "/historique"] },
+  { href: "/assistant", label: "Assistant", icon: ChatIcon, match: ["/assistant", "/discuter", "/historique"] },
 ] as const;
 
 function estActif(pathname: string, match: readonly string[]) {

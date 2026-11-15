@@ -100,7 +100,7 @@ export default function Accueil() {
           Que planter cette saison ?
         </Link>
         <Link
-          href="/discuter"
+          href="/assistant"
           className="flex min-h-[52px] items-center justify-center rounded-2xl border border-line bg-surface text-[15px] font-semibold text-ink no-underline"
         >
           Poser une question à l&apos;agent

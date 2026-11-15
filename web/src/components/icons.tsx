@@ -61,6 +61,24 @@ export const ClockIcon = () => (
     <path d="M12 7v5l3 2" />
   </Icon>
 );
+export const PaperclipIcon = () => (
+  <Icon size={20}><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L15.5 7" /></Icon>
+);
+export const ToolIcon = () => (
+  <Icon size={16}><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" /></Icon>
+);
+export const CheckIcon = () => (
+  <Icon size={16}><path d="m5 12 5 5L20 7" /></Icon>
+);
+export const CloseIcon = () => (
+  <Icon size={16}><path d="M6 6l12 12M18 6 6 18" /></Icon>
+);
+export const DocIcon = () => (
+  <Icon size={20}>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5M9 13h6M9 17h4" />
+  </Icon>
+);
 export const DropIcon = () => (
   <Icon><path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11z" /></Icon>
 );

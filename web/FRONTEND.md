@@ -35,16 +35,18 @@ web/src/
   app/                       ← les pages (une page = un dossier avec page.tsx)
     page.tsx                 /                  accueil / tableau de bord
     carte/page.tsx           /carte             carte des parcelles
-    discuter/page.tsx        /discuter          parler à l'agent (texte + micro)
+    assistant/page.tsx       /assistant         MODULE 06 : assistant intelligent (outils, photo, actions)
+    discuter/page.tsx        /discuter          → redirige vers /assistant
     historique/page.tsx      /historique        conseils donnés
     parcelles/[id]/page.tsx  /parcelles/tchibanga   fiche d'une parcelle
   components/                ← les morceaux d'interface, rangés par thème
-    carte/  discussion/  climat/  historique/  ui/
+    assistant/  carte/  discussion/  climat/  historique/  ui/
   lib/
     types.ts                 ← formats des données (alignés sur le serveur)
     api.ts                   ← appels au serveur
     supabase.ts              ← client Supabase (clé publique uniquement)
     donnees-demo.ts          ← données de démonstration pour avancer sans le serveur
+    assistant-demo.ts        ← moteur de démo de l'assistant (mots-clés, aucune IA)
 ```
 
 Règles :
@@ -63,3 +65,24 @@ Ces routes **n'existent pas encore** : le back-end les crée. Les formats sont d
 | `GET /api/conseils` | — | `Conseil[]` |
 
 Si un format doit changer, en parler au back-end et mettre à jour `types.ts` des deux côtés.
+
+## Module 06 — Assistant intelligent (`/assistant`)
+
+L'agent identifie l'intention, lit les données autorisées avec des outils, répond, puis **propose** les écritures : elles ne sont exécutées qu'après un clic sur « Confirmer ». Un diagnostic sur photo est toujours affiché comme une **hypothèse à vérifier**.
+
+- Page : `src/app/assistant/page.tsx`. `?parcelle=<id>` présélectionne une parcelle.
+- Composants : `src/components/assistant/` (`FenetreAssistant`, `BulleMessage`, `CarteAction`, `HistoriqueAssistant`).
+- Formulaire : message (texte), parcelle (sélection facultative), pièce jointe (JPEG/PNG/WebP/PDF, 10 Mo max), action proposée (aperçu puis Confirmer / Annuler).
+- Tables : `supabase/migrations/002_assistant_ia.sql` (`ai_agents`, `ai_conversations`, `ai_messages`, `ai_tool_calls`, `ai_recommendations`, `ai_action_logs`, `ai_knowledge_sources`, `ai_agent_permissions`) et bucket privé `ai-pieces-jointes`.
+- Outils déclarés : `lister_parcelles`, `consulter_parcelle`, `lire_indicateurs`, `rechercher_connaissances`, `analyser_photo` (lecture) ; `planifier_activite` (écriture, confirmation obligatoire).
+
+Tant que `NEXT_PUBLIC_ASSISTANT_API` n'est pas `on` dans `.env.local`, les réponses viennent de `lib/assistant-demo.ts`. Contrat à créer côté serveur :
+
+| Route | Envoi | Réponse |
+|---|---|---|
+| `POST /api/assistant/messages` | Formulaire : `message`, `conversationId?`, `parcelleId?`, `pieceJointe?` (fichier) | `ReponseAssistant` : `{ conversationId, message }` |
+| `POST /api/assistant/actions/:id` | JSON `{ decision: 'confirmer' \| 'annuler' }` | `ActionProposee` (statut mis à jour) |
+| `GET /api/assistant/conversations` | — | `ConversationAssistant[]` |
+| `GET /api/assistant/actions` | — | `JournalAction[]` |
+
+Le serveur reste la couche d'autorisation : il vérifie l'utilisateur, ne donne au LLM que les outils listés dans `ai_agent_permissions`, range les pièces jointes dans le bucket privé et refuse toute écriture sans confirmation.
