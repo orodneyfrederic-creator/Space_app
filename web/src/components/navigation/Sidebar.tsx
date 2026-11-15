@@ -1,6 +1,6 @@
 'use client'
 // Sidebar de l'espace agriculteur (« Farm Intelligence »), d'après le croquis de l'équipe.
-// Organisation (menu.ts) : « Au quotidien » (pages prêtes, un clic), « Mes données » (climat, sol),
+// Organisation (menu.ts) : le parcours en 4 étapes numérotées (Aujourd’hui, Comprendre, Agir, Mon suivi),
 // « Bientôt disponible » (pages en préparation, replié), puis aide, paramètres et compte en pied.
 // - Ordinateur (≥ 1024 px) : fixe à gauche, rubriques dépliables ; celle de la page en cours est ouverte.
 // - Téléphone et tablette : le même contenu en tiroir, ouvert par l'onglet « Menu » (événement sstack:ouvrir-menu).
@@ -93,9 +93,23 @@ function GroupeRubrique({ rubrique, chemin, ouvert, surBascule, badgeAVenir = fa
   )
 }
 
-const TitreSection = ({ children }: { children: ReactNode }) => (
-  <p className="m-0 px-3 pt-4 pb-1 text-[10.5px] font-semibold tracking-[0.14em] text-white/45 uppercase first:pt-0">{children}</p>
-)
+/** Titre d'une étape du parcours : numéro dans une pastille, nom, et la question à laquelle elle répond. */
+function TitreEtape({ numero, titre, question }: { numero: number; titre: string; question: string }) {
+  return (
+    <div className="flex items-center gap-2.5 px-3 pt-4 pb-1">
+      <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/12 font-mono text-[11px] font-semibold text-pousse">
+        {numero}
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[10.5px] font-semibold tracking-[0.14em] text-white/70 uppercase">
+          <span className="sr-only">Étape {numero} : </span>
+          {titre}
+        </span>
+        <span className="truncate text-[11.5px] text-white/45">{question}</span>
+      </span>
+    </div>
+  )
+}
 
 /** Pages en préparation : un seul bloc replié, pour ne pas mener vers des pages vides sans prévenir. */
 function BlocBientot({ chemin, ouvert, surBascule }: { chemin: string | null; ouvert: boolean; surBascule: () => void }) {
@@ -163,25 +177,20 @@ function Contenu({ chemin, surFermeture }: { chemin: string | null; surFermeture
       </div>
 
       <nav aria-label="Navigation principale" className="sidebar-defilement flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
-        <TitreSection>Au quotidien</TitreSection>
-        <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-          {menu.quotidien.map((e) => (
-            <li key={e.href}>
-              <Entree page={e} chemin={chemin} icone={<e.icone taille={18} />} miseEnAvant={e.miseEnAvant} />
+        <ol className="m-0 flex list-none flex-col gap-1 p-0">
+          {menu.etapes.map((etape) => (
+            <li key={etape.numero} className="flex flex-col gap-0.5">
+              <TitreEtape numero={etape.numero} titre={etape.titre} question={etape.question} />
+              <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+                {etape.entrees.map((e) => (
+                  <li key={e.href}>
+                    <Entree page={e} chemin={chemin} icone={<e.icone taille={18} />} miseEnAvant={e.miseEnAvant} />
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
-        </ul>
-
-        {menu.mesDonnees.length > 0 && (
-          <>
-            <TitreSection>Mes données</TitreSection>
-            <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-              {menu.mesDonnees.map((r) => (
-                <GroupeRubrique key={r.id} rubrique={r} chemin={chemin} ouvert={estOuverte(r)} surBascule={() => basculer(r)} badgeAVenir />
-              ))}
-            </ul>
-          </>
-        )}
+        </ol>
 
         {menu.bientot.length > 0 && (
           <BlocBientot chemin={chemin} ouvert={bientotOuvert} surBascule={() => setBascules((b) => ({ ...b, bientot: !bientotOuvert }))} />

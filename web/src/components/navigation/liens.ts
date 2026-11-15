@@ -1,6 +1,7 @@
-// Raccourcis de la barre d'onglets (téléphone et tablette). Le menu complet est dans menu.ts (sidebar).
+// Raccourcis de la barre d'onglets (téléphone et tablette), dans l'ordre du parcours : décider, comprendre, agir.
+// Le menu complet est dans menu.ts (sidebar).
 import type { ComponentType } from 'react'
-import { ChatIcon, HomeIcon, MapIcon, SproutIcon } from '../icons'
+import { ChartIcon, ChatIcon, HomeIcon, SproutIcon } from '../icons'
 
 export type Lien = {
   href: string
@@ -11,10 +12,10 @@ export type Lien = {
 }
 
 export const LIENS: readonly Lien[] = [
-  { href: '/tableau-de-bord', label: 'Accueil', icone: HomeIcon, correspond: ['/tableau-de-bord'] },
-  { href: '/carte', label: 'Carte', icone: MapIcon, correspond: ['/carte', '/parcelles'] },
+  { href: '/tableau-de-bord', label: 'Dashboard', icone: HomeIcon, correspond: ['/tableau-de-bord'] },
+  { href: '/graphiques', label: 'Graphiques', icone: ChartIcon, correspond: ['/graphiques', '/soil'] },
   { href: '/cultures', label: 'Cultures', icone: SproutIcon, correspond: ['/cultures'] },
-  { href: '/assistant', label: 'Agent', icone: ChatIcon, correspond: ['/assistant', '/discuter', '/historique'] },
+  { href: '/assistant', label: 'Mbolo', icone: ChatIcon, correspond: ['/assistant', '/discuter', '/historique'] },
 ]
 
 export function estActif(chemin: string, correspond: readonly string[]): boolean {

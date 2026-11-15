@@ -63,7 +63,7 @@ const ETAPES: readonly Etape[] = [
     cible: 'menu',
     cote: 'droite',
     titre: 'Toutes les pages',
-    texte: 'Le menu vous mène aux autres pages : votre sol, vos cultures, vos conseils.',
+    texte: 'Le menu suit 4 étapes : 1. Aujourd’hui (que faire), 2. Comprendre (pourquoi), 3. Agir (que planter), 4. Mon suivi. En bas de chaque page, « Étape suivante » vous guide.',
   },
   {
     titre: 'C’est tout !',

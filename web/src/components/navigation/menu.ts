@@ -3,7 +3,7 @@
 // - les pages « à venir » générées par app/(app)/[rubrique]/[page] et app/(app)/aide.
 // Une entrée avec `aVenir` n'a pas encore de contenu : elle affiche une page d'attente.
 // Les autres pointent vers les pages déjà construites (tableau de bord, carte, données, cultures, agent, historique).
-// La sidebar présente ces pages en trois blocs (voir plus bas) : QUOTIDIEN, MES_DONNEES et BIENTOT.
+// La sidebar présente ces pages en 4 étapes (ETAPES_PARCOURS), puis « Bientôt disponible » (BIENTOT).
 // RUBRIQUES reste la source complète (adresses des pages à venir et suggestions « Déjà disponible »).
 import type { ComponentType } from 'react'
 import type { Profil } from '@/lib/types'
@@ -48,7 +48,7 @@ export const EVENEMENT_OUVRIR_MENU = 'sstack:ouvrir-menu'
 const aVenir = (titre: string, href: string, description: string): PageMenu => ({ titre, href, description, aVenir: true })
 
 export const VUE_ENSEMBLE: PageMenu = {
-  titre: 'Accueil',
+  titre: 'Dashboard',
   href: '/tableau-de-bord',
   description: 'Le verdict de semis et les conditions du site choisi.',
 }
@@ -56,30 +56,55 @@ export const VUE_ENSEMBLE: PageMenu = {
 /** Entrée affichée directement (sans rubrique à déplier), avec son icône. */
 export type EntreeDirecte = PageMenu & { icone: Rubrique['icone']; miseEnAvant?: boolean }
 
-/**
- * « Au quotidien » : les pages déjà prêtes et les plus utiles, en accès direct (un seul clic).
- * Ordre = ce que le producteur vient faire : voir le verdict, poser une question, situer, sa culture, relire.
- */
-export const QUOTIDIEN: readonly EntreeDirecte[] = [
-  { ...VUE_ENSEMBLE, icone: IcoTableau },
+// ── Le parcours du producteur, en 4 étapes ──
+// 1. Aujourd'hui : que faire cette semaine (la décision)
+// 2. Comprendre  : pourquoi (les données NASA, puis ses propres mesures de terre)
+// 3. Agir        : que planter, et poser une question précise
+// 4. Mon suivi   : ce qui a déjà été conseillé
+// Chaque page se termine par une carte « Étape suivante » (navigation/EtapeSuivante.tsx).
+
+export type EtapeParcours = {
+  numero: 1 | 2 | 3 | 4
+  titre: string
+  /** La question à laquelle répond l'étape (affichée au survol et sous le titre) */
+  question: string
+  entrees: readonly EntreeDirecte[]
+}
+
+const DASHBOARD: EntreeDirecte = { ...VUE_ENSEMBLE, icone: IcoTableau }
+const MBOLO: EntreeDirecte = {
+  titre: `Demander à ${NOM_AGENT}`,
+  href: '/assistant',
+  description: 'Une question précise sur votre culture ou votre champ, à l’écrit ou à la voix.',
+  correspond: ['/assistant', '/discuter'],
+  icone: IcoBulle,
+  miseEnAvant: true,
+}
+
+export const ETAPES_PARCOURS: readonly EtapeParcours[] = [
+  { numero: 1, titre: 'Aujourd’hui', question: 'Que faire cette semaine ?', entrees: [DASHBOARD] },
   {
-    titre: `Demander à ${NOM_AGENT}`,
-    href: '/assistant',
-    description: 'Posez vos questions à l’agent, à l’écrit, à la voix ou avec une photo.',
-    correspond: ['/assistant', '/discuter'],
-    icone: IcoBulle,
-    miseEnAvant: true,
+    numero: 2,
+    titre: 'Comprendre',
+    question: 'Pourquoi ? Les chiffres NASA',
+    entrees: [
+      { titre: 'Mes graphiques', href: '/graphiques', description: 'La pluie, l’eau dans la terre et la chaleur des 30 derniers jours, expliquées simplement.', icone: IcoGraphique },
+      { titre: 'Mon sol', href: '/soil', description: 'Vos analyses de terre, l’humidité suivie par la NASA et ce que vous avez apporté au sol.', correspond: ['/soil'], icone: IcoCouches },
+      { titre: 'Carte des sites', href: '/carte', description: 'Les sites suivis et leur verdict de semis, en 2D ou en 3D.', correspond: ['/carte', '/parcelles'], icone: IcoCarte, profils: ['conseiller', 'organisation'] },
+      { titre: 'Historique climatique', href: '/donnees', description: 'Les 30 derniers jours de pluie NASA, comparés à la normale.', icone: IcoNuage, profils: ['conseiller', 'organisation'] },
+    ],
   },
-  { titre: 'Carte des sites', href: '/carte', description: 'Les sites suivis et leur verdict de semis, en 2D ou en 3D.', correspond: ['/carte', '/parcelles'], icone: IcoCarte, profils: ['conseiller', 'organisation'] },
-  // Producteur : son sol en accès direct (les autres profils le trouvent dans « Mes données »)
-  { titre: 'Mon sol', href: '/soil', description: 'Vos analyses de sol, l’humidité suivie par la NASA et vos amendements.', correspond: ['/soil'], icone: IcoCouches, profils: ['producteur'] },
-  { titre: 'Mes graphiques', href: '/graphiques', description: 'La pluie, l’eau dans la terre et la chaleur des 30 derniers jours, expliquées simplement.', icone: IcoGraphique },
-  { titre: 'Mes cultures', href: '/cultures', description: 'Repères et questions par culture.', icone: IcoGraine },
-  { titre: 'Mes conseils', href: '/historique', description: 'Les conseils déjà donnés, sur le web et Telegram.', icone: IcoHorloge },
+  {
+    numero: 3,
+    titre: 'Agir',
+    question: 'Planter au bon moment',
+    entrees: [{ titre: 'Mes cultures', href: '/cultures', description: 'Que planter, et quand : repères et questions par culture.', icone: IcoGraine }, MBOLO],
+  },
+  { numero: 4, titre: 'Mon suivi', question: 'Ce qui vous a été conseillé', entrees: [{ titre: 'Mes conseils', href: '/historique', description: 'Les conseils déjà donnés, sur le site et sur Telegram.', icone: IcoHorloge }] },
 ]
 
-/** Rubriques de « Mes données » (pages prêtes d'abord, pages à venir marquées « Bientôt »). */
-const IDS_MES_DONNEES = ['climat', 'sols'] as const
+/** Toutes les entrées directes du parcours (pour exclure ces pages de « Bientôt disponible »). */
+export const QUOTIDIEN: readonly EntreeDirecte[] = ETAPES_PARCOURS.flatMap((e) => e.entrees)
 
 export const RUBRIQUES: readonly Rubrique[] = [
   {
@@ -199,18 +224,10 @@ export const TOUTES_RUBRIQUES: readonly Rubrique[] = [...RUBRIQUES, PARAMETRES]
 
 const hrefsQuotidien = new Set(QUOTIDIEN.map((e) => e.href))
 
-/** « Mes données » : climat puis sol, titres courts, pages prêtes en premier. */
-export const MES_DONNEES: readonly Rubrique[] = IDS_MES_DONNEES.flatMap((id) => {
-  const r = RUBRIQUES.find((x) => x.id === id)
-  if (!r) return []
-  const titre = id === 'climat' ? 'Pluie et climat' : 'Mon sol'
-  return [{ ...r, titre, pages: [...r.pages.filter((p) => !p.aVenir), ...r.pages.filter((p) => p.aVenir)] }]
-})
-
-/** « Bientôt disponible » : les pages en préparation des autres rubriques, regroupées par rubrique. */
-export const BIENTOT: readonly Rubrique[] = RUBRIQUES.filter((r) => !(IDS_MES_DONNEES as readonly string[]).includes(r.id))
-  .map((r) => ({ ...r, pages: r.pages.filter((p) => p.aVenir && !hrefsQuotidien.has(p.href)) }))
-  .filter((r) => r.pages.length > 0)
+/** « Bientôt disponible » : les pages en préparation, regroupées par rubrique. */
+export const BIENTOT: readonly Rubrique[] = RUBRIQUES.map((r) => ({ ...r, pages: r.pages.filter((p) => p.aVenir && !hrefsQuotidien.has(p.href)) })).filter(
+  (r) => r.pages.length > 0,
+)
 
 /** L'entrée correspond-elle au chemin courant ? */
 export function estPageActive(chemin: string, page: PageMenu): boolean {
@@ -241,28 +258,21 @@ export function adressesAVenir(): { rubrique: string; page: string }[] {
 const visible = (profil: Profil) => (p: PageMenu) => !p.profils || p.profils.includes(profil)
 
 export type MenuProfil = {
-  quotidien: readonly EntreeDirecte[]
-  mesDonnees: readonly Rubrique[]
+  etapes: readonly EtapeParcours[]
   bientot: readonly Rubrique[]
   parametres: Rubrique
   aide: (PageMenu & { icone: Rubrique['icone'] }) | null
 }
 
 /**
- * Producteur : seulement ce qui sert son champ (Accueil, Mbolo, Mon sol, Mes cultures, Mes conseils, Paramètres),
- * sans aucune page « à venir ». Conseiller et organisation : en plus la carte des sites, l'historique climatique
- * et les pages en préparation.
+ * Les 4 étapes du parcours, filtrées selon le profil.
+ * Producteur : seulement ses pages (aucune page « à venir »). Conseiller et organisation : en plus la carte des sites,
+ * l'historique climatique, le centre d'aide et les pages en préparation.
  */
 export function menuPour(profil: Profil): MenuProfil {
-  const quotidien = QUOTIDIEN.filter(visible(profil))
+  const etapes = ETAPES_PARCOURS.map((e) => ({ ...e, entrees: e.entrees.filter(visible(profil)) })).filter((e) => e.entrees.length > 0)
   if (profil === 'producteur') {
-    return {
-      quotidien,
-      mesDonnees: [],
-      bientot: [],
-      parametres: { ...PARAMETRES, pages: PARAMETRES.pages.filter((p) => !p.aVenir) },
-      aide: null,
-    }
+    return { etapes, bientot: [], parametres: { ...PARAMETRES, pages: PARAMETRES.pages.filter((p) => !p.aVenir) }, aide: null }
   }
-  return { quotidien, mesDonnees: MES_DONNEES, bientot: BIENTOT, parametres: PARAMETRES, aide: CENTRE_AIDE }
+  return { etapes, bientot: BIENTOT, parametres: PARAMETRES, aide: CENTRE_AIDE }
 }

@@ -163,3 +163,10 @@ Tout est en CSS (`src/app/globals.css`) + un petit hook ; **aucune bibliothèque
 - Couleurs de l'humidité : `couleurHumidite()` dans `lib/etat-sol.ts` (Terre Latérite → Pierre de Mbigou → Bleu Océan, interpolé en OKLab). Gouttes d'eau en plus de la couleur.
 - `sols/GraphiqueHumidite.tsx` (page /soil, travail d'un coéquipier) est laissé tel quel : il montre 60 jours de la seule zone des racines.
 - Page **/graphiques** (« Mes graphiques », `components/vues/VueGraphiques.tsx`) : 3 questions (« A-t-il plu ? », « Assez d'eau dans la terre ? », « Fait-il chaud ? »), chacune avec la réponse en une phrase, un graphique et « Comment lire ce graphique ». L'accueil du producteur y renvoie par un lien. `sol/EvolutionSol.tsx` reste utilisé dans le détail d'une zone (conseiller, organisation).
+
+## Parcours dans l'espace agriculteur
+
+- Le menu (`navigation/menu.ts`, `ETAPES_PARCOURS`) suit 4 étapes numérotées : **1 Aujourd'hui** (Dashboard), **2 Comprendre** (Mes graphiques, Mon sol ; + Carte des sites et Historique climatique pour conseiller et organisation), **3 Agir** (Mes cultures, Demander à Mbolo), **4 Mon suivi** (Mes conseils). « Bientôt disponible » n'apparaît que pour conseiller et organisation.
+- En bas de chaque page, `navigation/EtapeSuivante.tsx` (posé dans `app/(app)/layout.tsx`) propose la page suivante : Dashboard → Mes graphiques → Mon sol → Mes cultures → Mbolo → Mes conseils → Dashboard. Pour ajouter une page au parcours : une ligne dans `suitePour()`.
+- Barre d'onglets (téléphone, `navigation/liens.ts`) : Dashboard, Graphiques, Cultures, Mbolo, Menu.
+

@@ -112,21 +112,6 @@ export default function AccueilProducteur() {
         )}
       </div>
 
-      {etat && (
-        <Link
-          href="/graphiques"
-          className="group flex items-center justify-between gap-4 rounded-3xl border border-line bg-surface px-5 py-4 no-underline hover:border-accent"
-        >
-          <span className="flex flex-col gap-0.5">
-            <span className="font-display text-[17px] font-semibold text-ink">Voir mes graphiques expliqués</span>
-            <span className="text-[14px] text-muted-2">La pluie, l&apos;eau dans la terre et la chaleur des 30 derniers jours, en mots simples.</span>
-          </span>
-          <span aria-hidden="true" className="fleche-glisse shrink-0 text-xl text-accent transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none">
-            →
-          </span>
-        </Link>
-      )}
-
       <BandeauTelegram />
     </div>
   )
